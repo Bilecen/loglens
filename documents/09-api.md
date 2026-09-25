@@ -75,3 +75,9 @@ uygulama açıkken WS + periyodik polling yeterli.
 
 - Auth + okuma/yönetim + bildirim + sohbet uçları yukarıdakilerle aynıdır.
 - Native (Android/Kotlin + iOS/Swift) istemciler `openapi.json`'dan client üretebilir.
+
+## MCP (kendi AI aracınız için)
+REST/WebSocket'e ek olarak `/mcp/` altında bir **Model Context Protocol** sunucusu vardır —
+Claude Code/Desktop, Cursor gibi araçlar kendi kimlik doğrulamalarıyla (Bearer MCP anahtarı,
+JWT'den ayrı) bağlanıp hata verisini okur, not düşer, durum günceller. Detay ve bağlantı
+adımları: [11. bölüm — MCP entegrasyonu](11-mcp.md).

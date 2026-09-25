@@ -9,8 +9,13 @@ LogLens backend'i REST + WebSocket sunar. Tam ve güncel kontrat **otomatik** ü
 > (Kotlin, Swift, TS…).
 
 ## Kimlik doğrulama
-- `POST /auth/login` → `{ token, user }`. Dönen **JWT**'yi sonraki isteklerde
-  `Authorization: Bearer <token>` başlığıyla gönderin.
+- `POST /auth/login` → `{ token, refresh_token, user }`. Dönen **JWT** (`token`) sonraki
+  isteklerde `Authorization: Bearer <token>` başlığıyla gönderilir. Access token 7 gün geçerli.
+- `POST /auth/refresh` → body `{ refresh_token }`, döner `{ token, user }` (yeni access token).
+  Refresh token 90 gün geçerli — mobilde uzun oturum için bunu güvenli depoda (Keychain/Keystore)
+  saklayın, access token süresi dolunca bunu çağırın.
+- `POST /auth/logout` → body `{ refresh_token }`, refresh token'ı sunucuda iptal eder
+  (cihaz kaybında / çıkışta çağırın).
 - `GET /auth/me` → mevcut kullanıcı.
 - WebSocket için token query param'da: `/ws?token=<jwt>`.
 
@@ -43,6 +48,36 @@ Sunucu yayınlar: `chat` (yeni mesaj), `presence` (durum değişti), `online` (b
 ## Mobil uygulama
 Mimari: **tek uygulama** app store'da; kullanıcı kendi **LogLens sunucu URL'ini ekler**
 (self-hosted istemci deseni). App ince istemcidir — tüm veri müşterinin sunucusunda kalır.
-- Sunucu doğrulaması: `GET /health`.
+
+**Sunucu ekleme (QR):** Web login sayfası bir QR gösterir; QR şu deep link'i kodlar:
+`loglens://add-server?url=<sunucu-origin>`. App bu URL şemasını (Android intent-filter /
+iOS URL scheme) yakalayıp `url` parametresini sunucu listesine ekler. Elle URL girişi de
+desteklenmeli (QR olmadan).
+
+**Sunucu doğrulama:** Eklenen/QR'dan gelen URL'e `GET /health` atın:
+```json
+{
+  "ok": true,
+  "name": "loglens",
+  "api_version": "1.0",
+  "provider": "local",
+  "embed_model": "BAAI/bge-m3",
+  "features": { "websocket": true, "chat": true, "notifications": true, "refresh_token": true }
+}
+```
+`ok && name == "loglens"` gerçek bir LogLens sunucusu olduğunu doğrular. Kimlik istemez.
+
+**Yeni hata bildirimi:** Kritik/yüksek şiddetli yeni bir hata kümesi oluştuğunda, proje
+üyelerine otomatik `type: "new_error"` bildirimi düşer (`GET /notifications`) ve açık WS
+bağlantısına `{ "type": "notification", "user_ids": [...] }` yayınlanır — app bunu görünce
+`/notifications`'ı tazeler. **v1'de arka plan push (FCM/APNs) yok**, bilerek ertelendi:
+uygulama açıkken WS + periyodik polling yeterli.
+
 - Auth + okuma/yönetim + bildirim + sohbet uçları yukarıdakilerle aynıdır.
 - Native (Android/Kotlin + iOS/Swift) istemciler `openapi.json`'dan client üretebilir.
+
+## MCP (kendi AI aracınız için)
+REST/WebSocket'e ek olarak `/mcp/` altında bir **Model Context Protocol** sunucusu vardır —
+Claude Code/Desktop, Cursor gibi araçlar kendi kimlik doğrulamalarıyla (Bearer MCP anahtarı,
+JWT'den ayrı) bağlanıp hata verisini okur, not düşer, durum günceller. Detay ve bağlantı
+adımları: [11. bölüm — MCP entegrasyonu](11-mcp.md).

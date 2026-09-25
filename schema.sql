@@ -53,6 +53,18 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
 );
 CREATE INDEX IF NOT EXISTS idx_refresh_user ON refresh_tokens (user_id);
 
+-- MCP (Model Context Protocol) erişim anahtarları — kullanıcının kendi AI aracını
+-- (Claude Code/Desktop, Cursor…) LogLens'e bağlaması için. Süresiz, kullanıcı elle iptal eder.
+CREATE TABLE IF NOT EXISTS mcp_tokens (
+    id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id    BIGINT      NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash TEXT        NOT NULL UNIQUE,
+    name       TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    last_used_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_mcp_user ON mcp_tokens (user_id);
+
 -- CMS kullanıcıları. İlk kayıt olan otomatik 'admin' olur (backend'de karar verilir).
 CREATE TABLE IF NOT EXISTS users (
     id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

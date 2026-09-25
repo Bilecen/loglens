@@ -127,4 +127,9 @@ export const api = {
   createWebhook: (projectId, body) => req(`/webhooks${qs({ project_id: projectId })}`, { method: "POST", body: JSON.stringify(body) }),
   toggleWebhook: (id, active) => req(`/webhooks/${id}`, { method: "PATCH", body: JSON.stringify({ active }) }),
   deleteWebhook: (id) => req(`/webhooks/${id}`, { method: "DELETE" }),
+
+  // MCP (Model Context Protocol) erişim anahtarları — kullanıcı kendi AI aracını bağlar
+  mcpTokens: () => req("/mcp-tokens"),
+  createMcpToken: (name) => req("/mcp-tokens", { method: "POST", body: JSON.stringify({ name }) }),
+  revokeMcpToken: (id) => req(`/mcp-tokens/${id}`, { method: "DELETE" }),
 };

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import Icon from "./Icon";
+import { useLocale } from "./i18n";
 
 // Bu sunucunun herkese açık adresi — mobil uygulama bunu okuyup kendi
 // sunucusu olarak ekler. Deep link şeması: loglens://add-server?url=<origin>
@@ -8,6 +9,7 @@ const serverUrl = window.location.origin;
 const deepLink = `loglens://add-server?url=${encodeURIComponent(serverUrl)}`;
 
 export default function ServerQR() {
+  const { t } = useLocale();
   const canvasRef = useRef(null);
   const [copied, setCopied] = useState(false);
 
@@ -34,17 +36,17 @@ export default function ServerQR() {
       <div className="min-w-0">
         <div className="flex items-center gap-2 text-[13px] font-semibold">
           <Icon icon="lucide:smartphone" size={15} />
-          Mobil uygulamaya bağlan
+          {t("serverQr.connectToMobile")}
         </div>
         <p className="text-[12px] opacity-80 mt-1 leading-snug">
-          LogLens uygulamasında QR'ı okut, sunucun otomatik eklensin.
+          {t("serverQr.scanHint")}
         </p>
         <button
           onClick={copy}
           className="mt-2 flex items-center gap-1.5 text-[12px] font-medium opacity-90 hover:opacity-100 max-w-full"
         >
           <Icon icon={copied ? "lucide:check" : "lucide:copy"} size={13} className="shrink-0" />
-          <span className="truncate">{copied ? "Kopyalandı" : serverUrl}</span>
+          <span className="truncate">{copied ? t("serverQr.copied") : serverUrl}</span>
         </button>
       </div>
     </div>

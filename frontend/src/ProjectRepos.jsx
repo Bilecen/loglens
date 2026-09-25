@@ -3,6 +3,7 @@ import { api } from "./api";
 import { useConfirm } from "./Modal";
 import { timeAgo } from "./labels";
 import Icon from "./Icon";
+import { useLocale } from "./i18n";
 
 const EMPTY = { provider: "github", full_name: "", default_branch: "main", token: "", path_prefix: "" };
 
@@ -10,13 +11,13 @@ const PROVIDERS = {
   github: {
     label: "GitHub", icon: "simple-icons:github",
     nameLabel: "Repo (owner/repo)", namePlaceholder: "acme/mobile-app",
-    tokenPlaceholder: "ghp_… (boşsa sunucudaki token)",
+    tokenPlaceholderKey: "projectRepos.githubTokenPlaceholder",
     url: (fn) => `https://github.com/${fn}`,
   },
   azure: {
     label: "Azure DevOps", icon: "simple-icons:azuredevops",
     nameLabel: "Repo (org / proje / repo)", namePlaceholder: "acme/Mobile/mobile-app",
-    tokenPlaceholder: "Azure PAT (Code:Read) — boşsa sunucudaki token",
+    tokenPlaceholderKey: "projectRepos.azureTokenPlaceholder",
     url: (fn) => {
       const [org, project, ...rest] = fn.split("/");
       return `https://dev.azure.com/${org}/${project}/_git/${rest.join("/")}`;
@@ -27,6 +28,7 @@ const PROVIDERS = {
 // Bir projeye bağlı repoları yönetir (liste + bağla + kaldır).
 export default function ProjectRepos({ projectId, onChange }) {
   const confirm = useConfirm();
+  const { t } = useLocale();
   const [repos, setRepos] = useState([]);
   const [form, setForm] = useState(EMPTY);
   const [busy, setBusy] = useState(false);
@@ -56,9 +58,9 @@ export default function ProjectRepos({ projectId, onChange }) {
 
   const remove = async (r) => {
     const yes = await confirm({
-      title: "Repoyu kaldır",
-      message: `${r.full_name} bağlantısı kaldırılacak. Kaynak kod eşlemesi çalışmayacak.`,
-      confirmText: "Kaldır", danger: true,
+      title: t("projectRepos.removeTitle"),
+      message: t("projectRepos.removeMessage", { name: r.full_name }),
+      confirmText: t("projectRepos.remove"), danger: true,
     });
     if (!yes) return;
     try { await api.deleteRepo(r.id); await load(); onChange?.(); } catch (e) { setErr(e.message); }
@@ -70,7 +72,7 @@ export default function ProjectRepos({ projectId, onChange }) {
 
       {/* Bağlı repolar */}
       {repos.length === 0
-        ? <div className="text-faint text-[12.5px] mb-3">Bu projeye henüz repo bağlı değil.</div>
+        ? <div className="text-faint text-[12.5px] mb-3">{t("projectRepos.noRepos")}</div>
         : (
           <div className="flex flex-col gap-1.5 mb-3">
             {repos.map((r) => {
@@ -84,8 +86,8 @@ export default function ProjectRepos({ projectId, onChange }) {
                   <span className="font-mono text-[12.5px] font-semibold truncate">{r.full_name}</span>
                   <span className="text-faint text-[11px]">{r.default_branch}</span>
                   <div className="ml-auto flex items-center gap-1">
-                    <a className="btn ghost sm inline-flex items-center gap-1" href={cfg.url(r.full_name)} target="_blank" rel="noreferrer">Aç <Icon icon="lucide:external-link" size={12} /></a>
-                    <button className="btn ghost sm danger" onClick={() => remove(r)}>Kaldır</button>
+                    <a className="btn ghost sm inline-flex items-center gap-1" href={cfg.url(r.full_name)} target="_blank" rel="noreferrer">{t("projectRepos.open")} <Icon icon="lucide:external-link" size={12} /></a>
+                    <button className="btn ghost sm danger" onClick={() => remove(r)}>{t("projectRepos.remove")}</button>
                   </div>
                 </div>
               );
@@ -104,13 +106,13 @@ export default function ProjectRepos({ projectId, onChange }) {
             value={form.full_name} onChange={set("full_name")} />
         </div>
         <div className="grid grid-cols-2 gap-2 mb-2">
-          <input className="text-[12.5px] py-1.5" placeholder="dal (main)" value={form.default_branch} onChange={set("default_branch")} />
-          <input className="text-[12.5px] py-1.5" placeholder="yol öneki (app/src/)" value={form.path_prefix} onChange={set("path_prefix")} />
+          <input className="text-[12.5px] py-1.5" placeholder={t("projectRepos.branchPlaceholder")} value={form.default_branch} onChange={set("default_branch")} />
+          <input className="text-[12.5px] py-1.5" placeholder={t("projectRepos.pathPrefixPlaceholder")} value={form.path_prefix} onChange={set("path_prefix")} />
         </div>
-        <input className="text-[12.5px] py-1.5 mb-2" type="password" placeholder={P.tokenPlaceholder}
+        <input className="text-[12.5px] py-1.5 mb-2" type="password" placeholder={t(P.tokenPlaceholderKey)}
           value={form.token} onChange={set("token")} />
         <button className="btn sm" type="submit" disabled={busy}>
-          {busy ? "Bağlanıyor…" : <><Icon icon={P.icon} size={14} /> Repo bağla</>}
+          {busy ? t("projectRepos.connecting") : <><Icon icon={P.icon} size={14} /> {t("projectRepos.connectRepo")}</>}
         </button>
       </form>
     </div>

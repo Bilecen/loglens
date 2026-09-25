@@ -1,5 +1,6 @@
 // Bağımlılıksız, hafif grafik bileşenleri (Tailwind + CSS değişkenleri ile).
 import { useState } from "react";
+import { tGlobal } from "./i18n";
 
 const PALETTE = {
   critical: "#f43f5e", high: "#f59e0b", medium: "#6366f1", low: "#94a3b8",
@@ -10,7 +11,7 @@ export const colorFor = (k) => PALETTE[k] || "#6366f1";
 
 const Empty = ({ h }) => (
   <div className="flex items-center justify-center text-faint text-[13px]" style={{ height: h }}>
-    Henüz veri yok
+    {tGlobal("charts.noData")}
   </div>
 );
 
@@ -173,7 +174,7 @@ export function Donut({ data, labels = {}, size = 150 }) {
             {hi !== null ? data[hi].count : total}
           </text>
           <text x="21" y="25.5" textAnchor="middle" fontSize="2.7" fill="var(--muted)" fontWeight="600">
-            {hi !== null ? (labels[data[hi].key] || data[hi].key) : "toplam"}
+            {hi !== null ? (labels[data[hi].key] || data[hi].key) : tGlobal("charts.total")}
           </text>
         </g>
       </svg>

@@ -8,20 +8,29 @@ Değerler **çalışırken (yeniden başlatmadan)** geçerli olur; boş bırakı
 > ve tekrarlar LLM çağırmaz — maliyet düşük kalır.
 
 ## LLM sağlayıcısı
-Üç seçenek (segment kontrolü):
+Beş seçenek (segment kontrolü):
 
 | Sağlayıcı | Ne zaman |
 |-----------|----------|
 | **LM Studio** | Yerel, OpenAI uyumlu sunucu (varsayılan `http://localhost:1234/v1`) |
 | **Ollama** | Yerel Ollama (OpenAI uyumlu, `http://localhost:11434/v1`) |
+| **OpenAI (GPT)** | Bulut — API anahtarı gerekir |
+| **Gemini** | Google Gemini API (bulut) — API anahtarı gerekir |
 | **Anthropic (Claude)** | Bulut — API anahtarı gerekir |
 
 Her sağlayıcının kendi alanları:
 - **LM Studio / Ollama:** Base URL + Model (+ opsiyonel API anahtarı).
-- **Anthropic:** API anahtarı + Model (örn. `claude-sonnet-5`).
+- **OpenAI / Gemini / Anthropic:** API anahtarı + Model (+ opsiyonel Base URL).
 
 > **Önemli (LM Studio/Ollama):** `Model` alanı, sunucuda O AN YÜKLÜ modelin id'siyle birebir
 > eşleşmeli; yoksa çağrı hata verir. Yüklü modelleri sunucunuzdan kontrol edin.
+
+## Yanıt dili
+**Yanıt dili** alanı, LLM'in ürettiği başlık/özet metinlerinin hangi dilde yazılacağını belirler
+(serbest metin — "Türkçe", "English", "Deutsch" vb.). **Tüm ekip için tek ve global** bir
+ayardır; log'un kendi dili ne olursa olsun LLM yorumu bu dilde üretilir. Web arayüzünün kendi
+dili (Profil menüsündeki Türkçe/İngilizce seçici) bundan **bağımsızdır** — biri arayüz
+metinlerini, diğeri LLM'in ürettiği içeriği kontrol eder.
 
 ## Bağlantıyı test etme
 **Bağlantıyı test et** butonu, kayıtlı ayarla küçük bir örnek çağrı yapar ve sonucu gösterir

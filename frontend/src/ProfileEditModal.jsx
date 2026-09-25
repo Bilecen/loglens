@@ -4,6 +4,7 @@ import { useAuth } from "./auth";
 import { Modal } from "./Modal";
 import Avatar from "./Avatar";
 import Icon from "./Icon";
+import { useLocale } from "./i18n";
 
 // Fotoğrafı tarayıcıda kare kırpıp küçült (256px, jpeg) → data-URI. DB'de birkaç KB kalır.
 async function resizeToDataUrl(file, size = 256) {
@@ -24,6 +25,7 @@ async function resizeToDataUrl(file, size = 256) {
 
 export default function ProfileEditModal({ open, onClose }) {
   const { user, updateUser } = useAuth();
+  const { t } = useLocale();
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [avatar, setAvatar] = useState("");
@@ -37,7 +39,7 @@ export default function ProfileEditModal({ open, onClose }) {
   const pickFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    try { setAvatar(await resizeToDataUrl(file)); } catch { setErr("Görsel okunamadı"); }
+    try { setAvatar(await resizeToDataUrl(file)); } catch { setErr(t("profileEdit.imageReadError")); }
   };
 
   const save = async () => {
@@ -52,29 +54,29 @@ export default function ProfileEditModal({ open, onClose }) {
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Profili düzenle" size={420}
+    <Modal open={open} onClose={onClose} title={t("profileEdit.title")} size={420}
       footer={<>
-        <button className="btn ghost" onClick={onClose}>Vazgeç</button>
-        <button className="btn" onClick={save} disabled={busy}>{busy ? "Kaydediliyor…" : "Kaydet"}</button>
+        <button className="btn ghost" onClick={onClose}>{t("profileEdit.cancel")}</button>
+        <button className="btn" onClick={save} disabled={busy}>{busy ? t("profileEdit.saving") : t("profileEdit.save")}</button>
       </>}>
       {/* Fotoğraf */}
       <div className="flex items-center gap-3.5 mb-1">
         <Avatar user={{ name, avatar }} size={68} className="!rounded-2xl" />
         <div className="flex flex-col gap-1.5">
           <label className="btn ghost sm cursor-pointer inline-flex">
-            <Icon icon="lucide:image" size={13} /> Fotoğraf seç
+            <Icon icon="lucide:image" size={13} /> {t("profileEdit.choosePhoto")}
             <input type="file" accept="image/*" className="hidden" onChange={pickFile} />
           </label>
-          {avatar && <button type="button" className="btn ghost sm danger" onClick={() => setAvatar("")}>Kaldır</button>}
+          {avatar && <button type="button" className="btn ghost sm danger" onClick={() => setAvatar("")}>{t("profileEdit.remove")}</button>}
         </div>
       </div>
 
-      <label className="field-label">Ad</label>
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Adın" />
+      <label className="field-label">{t("profileEdit.nameLabel")}</label>
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("profileEdit.namePlaceholder")} />
 
-      <label className="field-label">Yeni parola (opsiyonel)</label>
+      <label className="field-label">{t("profileEdit.passwordLabel")}</label>
       <input type="password" autoComplete="new-password" value={password}
-        onChange={(e) => setPassword(e.target.value)} placeholder="Değiştirmek için yaz (en az 6)" />
+        onChange={(e) => setPassword(e.target.value)} placeholder={t("profileEdit.passwordPlaceholder")} />
 
       {err && <div className="mt-3 bg-danger-soft text-danger rounded-[10px] px-3.5 py-2.5 text-[13px]">{err}</div>}
     </Modal>

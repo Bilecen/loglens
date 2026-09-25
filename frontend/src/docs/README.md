@@ -1,7 +1,8 @@
 # LogLens — Kullanıcı Dokümantasyonu
 
 LogLens, uygulamalarınızın (mobil + backend) hatalarını tek yerde toplayan, **anlamsal
-olarak kümeleyen** ve **yapay zeka ile Türkçe yorumlayan** bir hata-analiz platformudur.
+olarak kümeleyen** ve **yapay zeka ile yorumlayan** bir hata-analiz platformudur (LLM yorum dili
+ve arayüz dili ayrı ayrı yapılandırılabilir — Türkçe/İngilizce dahil).
 
 - Aynı kök nedene sahip farklı hatalar **tek gruba** düşer (embedding tabanlı benzerlik).
 - Her yeni grup için LLM **başlık + özet + önem derecesi** üretir.
@@ -21,6 +22,8 @@ olarak kümeleyen** ve **yapay zeka ile Türkçe yorumlayan** bir hata-analiz pl
 | 7 | [Profil & Görünüm](07-profil.md) | Profil düzenleme, fotoğraf, tema, tasarım stilleri |
 | 8 | [Kurulum & Deploy](08-kurulum-deploy.md) | Docker, docker-compose, Coolify |
 | 9 | [API Referansı](09-api.md) | OpenAPI, kimlik doğrulama, mobil |
+| 10 | [Ortam Değişkenleri](10-env-degiskenleri.md) | `.env` şablonu, Coolify kurulumu |
+| 11 | [MCP Entegrasyonu](11-mcp.md) | Kendi AI aracınızı (Claude Code vb.) bağlama |
 
 ## Hızlı başlangıç
 1. Tarayıcıdan arayüze girin, **admin** hesabıyla oturum açın.

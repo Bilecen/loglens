@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     # "claude" veya "local"
     llm_provider: str = "local"
 
+    # LLM'in title/summary ürettiği dil (serbest metin, örn. "Türkçe", "English", "Deutsch").
+    # Tüm ekip için tek ve global — Ayarlar panelinden değişir.
+    response_language: str = "Türkçe"
+
     # Claude API
     anthropic_api_key: str = ""
     claude_model: str = "claude-sonnet-5"  # eriştiğin modele göre değiştir

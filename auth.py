@@ -65,6 +65,12 @@ def hash_token(raw: str) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
+def new_mcp_token() -> tuple[str, str]:
+    """(ham token, sha256 hash) döndürür. Süresiz — kullanıcı elle iptal eder."""
+    raw = "lml_" + secrets.token_urlsafe(40)
+    return raw, hashlib.sha256(raw.encode()).hexdigest()
+
+
 async def user_from_token(token: str) -> dict | None:
     """WebSocket için: token'ı doğrula, kullanıcıyı döndür (geçersizse None)."""
     try:

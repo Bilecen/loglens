@@ -29,6 +29,10 @@ class RefreshIn(BaseModel):
     refresh_token: str
 
 
+class McpTokenIn(BaseModel):
+    name: str = Field(min_length=1, max_length=120, description="örn. 'Claude Code - MacBook'")
+
+
 class UserCreateIn(BaseModel):
     email: EmailStr
     password: str = Field(min_length=6)
@@ -115,6 +119,7 @@ class SettingsIn(BaseModel):
     # Hepsi opsiyonel: yalnızca gönderilen alanlar güncellenir (secret'lar
     # değişmediyse UI göndermez). "" = temizle (env fallback'e dön).
     llm_provider: str | None = Field(None, pattern="^(local|ollama|claude|openai|gemini)$")
+    response_language: str | None = Field(None, max_length=40, description="örn. 'Türkçe', 'English'")
     anthropic_api_key: str | None = None
     claude_model: str | None = None
     local_base_url: str | None = None

@@ -3,8 +3,10 @@ import { api } from "./api";
 import { useProject } from "./project";
 import DataSources from "./DataSources";
 import Icon from "./Icon";
+import { useLocale } from "./i18n";
 
-function CopyButton({ text, className = "btn ghost sm", children = "Kopyala" }) {
+function CopyButton({ text, className = "btn ghost sm", children }) {
+  const { t } = useLocale();
   const [done, setDone] = useState(false);
   const copy = async () => {
     try { await navigator.clipboard.writeText(text); setDone(true); setTimeout(() => setDone(false), 1500); }
@@ -12,13 +14,13 @@ function CopyButton({ text, className = "btn ghost sm", children = "Kopyala" }) 
   };
   return (
     <button type="button" className={`${className} inline-flex items-center gap-1.5`} onClick={copy}>
-      <Icon icon="lucide:copy" size={13} /> {done ? "Kopyalandı" : children}
+      <Icon icon="lucide:copy" size={13} /> {done ? t("integrations.copied") : (children ?? t("integrations.copy"))}
     </button>
   );
 }
 
 const TABS = [
-  { key: "vector", label: "Coolify / Vector", hint: "Kod değişmeden, tüm servisler" },
+  { key: "vector", label: "Coolify / Vector", hintKey: "integrations.hintVector" },
   { key: "spring", label: "Spring Boot / Ktor", hint: "Logback appender" },
   { key: "fastapi", label: "FastAPI", hint: "logging.Handler" },
   { key: "laravel", label: "Laravel", hint: "Monolog handler" },
@@ -150,6 +152,7 @@ builder.Host.UseSerilog();`,
 };
 
 export default function Integrations() {
+  const { t } = useLocale();
   const { projectId } = useProject();
   const [hooks, setHooks] = useState([]);
   const [hookId, setHookId] = useState(null);
@@ -170,11 +173,10 @@ export default function Integrations() {
     <div className="anim-in">
       <div className="mb-6">
         <h2 className="text-[22px] font-extrabold tracking-tight flex items-center gap-2">
-          <Icon icon="lucide:plug" size={20} /> Entegrasyonlar
+          <Icon icon="lucide:plug" size={20} /> {t("integrations.title")}
         </h2>
         <p className="text-muted text-[13px] mt-1 max-w-2xl">
-          Production sunucularındaki (Coolify) uygulamaların hatalarını bu projeye akıt.
-          Vector ile kod değişmeden tüm servisler, ya da framework'e küçük bir kod ekleyerek.
+          {t("integrations.description")}
         </p>
       </div>
 
@@ -185,16 +187,16 @@ export default function Integrations() {
         <div className="card-surface p-8 text-center">
           <div className="w-11 h-11 rounded-xl grid place-items-center text-muted mx-auto mb-2"
             style={{ background: "var(--panel-2)" }}><Icon icon="lucide:webhook" size={18} /></div>
-          <div className="text-[13px] font-semibold">Bu proje için webhook yok (servis logları için)</div>
-          <div className="text-faint text-[12px] mt-1">Servis logları için <b>Webhooks</b> sayfasından bir webhook üret.</div>
+          <div className="text-[13px] font-semibold">{t("integrations.noWebhooks")}</div>
+          <div className="text-faint text-[12px] mt-1">{t("integrations.noWebhooksHintPrefix")} <b>Webhooks</b> {t("integrations.noWebhooksHintSuffix")}</div>
         </div>
       ) : (
         <div className="flex flex-col gap-4">
           {/* Webhook seçimi */}
           <div className="card-surface p-[18px]">
-            <label className="field-label !mt-0">Hedef webhook (token)</label>
+            <label className="field-label !mt-0">{t("integrations.targetWebhookLabel")}</label>
             <select className="w-full" value={hookId ?? ""} onChange={(e) => setHookId(Number(e.target.value))}>
-              {hooks.map((h) => <option key={h.id} value={h.id}>{h.name}{h.active ? "" : " (pasif)"}</option>)}
+              {hooks.map((h) => <option key={h.id} value={h.id}>{h.name}{h.active ? "" : t("integrations.inactiveSuffix")}</option>)}
             </select>
             <div className="flex items-center gap-2 mt-2.5">
               <code className="flex-1 min-w-0 text-[12px] font-mono bg-surface-2 border border-line rounded-lg px-2.5 py-2 overflow-x-auto whitespace-nowrap">
@@ -206,17 +208,17 @@ export default function Integrations() {
 
           {/* Tab seçimi */}
           <div className="flex flex-wrap gap-1.5">
-            {TABS.map((t) => {
-              const active = tab === t.key;
+            {TABS.map((tabItem) => {
+              const active = tab === tabItem.key;
               return (
-                <button key={t.key} onClick={() => setTab(t.key)}
+                <button key={tabItem.key} onClick={() => setTab(tabItem.key)}
                   className="px-3 py-2 rounded-lg text-[12.5px] font-semibold transition-all"
                   style={{
                     background: active ? "var(--accent-soft)" : "var(--panel-2)",
                     color: active ? "var(--accent)" : "var(--muted)",
                     border: `1px solid ${active ? "var(--accent)" : "var(--border)"}`,
                   }}>
-                  {t.label}
+                  {tabItem.label}
                 </button>
               );
             })}
@@ -226,15 +228,20 @@ export default function Integrations() {
           <div className="card-surface p-[18px]">
             <div className="flex items-center justify-between mb-2.5">
               <div>
-                <h3 className="text-[14px] font-bold">{TABS.find((t) => t.key === tab)?.label}</h3>
-                <p className="text-faint text-[11.5px]">{TABS.find((t) => t.key === tab)?.hint}</p>
+                <h3 className="text-[14px] font-bold">{TABS.find((tabItem) => tabItem.key === tab)?.label}</h3>
+                <p className="text-faint text-[11.5px]">
+                  {(() => {
+                    const cur = TABS.find((tabItem) => tabItem.key === tab);
+                    return cur?.hintKey ? t(cur.hintKey) : cur?.hint;
+                  })()}
+                </p>
               </div>
-              <CopyButton text={code}>Kodu kopyala</CopyButton>
+              <CopyButton text={code}>{t("integrations.copyCode")}</CopyButton>
             </div>
             <pre className="bg-code border border-line-strong rounded-[10px] px-3.5 py-3 overflow-x-auto text-[11.5px] font-mono leading-relaxed m-0 max-h-[440px]">{code}</pre>
             {tab === "vector" && (
               <p className="text-faint text-[11.5px] mt-2">
-                Tam config <span className="font-mono">integrations/vector.toml</span>'da (multiline stack birleştirme + JSON parse dahil).
+                {t("integrations.fullConfigPrefix")} <span className="font-mono">integrations/vector.toml</span>{t("integrations.fullConfigSuffix")}
               </p>
             )}
           </div>

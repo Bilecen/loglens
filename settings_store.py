@@ -13,6 +13,7 @@ from config import settings
 # key -> (secret?, env-default getter)
 KEYS = {
     "llm_provider":       (False, lambda: settings.llm_provider),      # local | ollama | claude
+    "response_language":  (False, lambda: settings.response_language),  # LLM title/summary dili
     "anthropic_api_key":  (True,  lambda: settings.anthropic_api_key),
     "claude_model":       (False, lambda: settings.claude_model),
     "local_base_url":     (False, lambda: settings.local_base_url),

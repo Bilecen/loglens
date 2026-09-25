@@ -1,5 +1,7 @@
 # LogLens
 
+*[English version](README.en.md)*
+
 Kendi sunucunuza kurduğunuz (self-hosted), **anlamsal hata kümeleme** ve **yapay zeka
 yorumlu** hata-analiz platformu. Firebase Crashlytics/Analytics, mobil SDK'lar ve
 production backend logları (Spring Boot, Ktor, FastAPI, Laravel, .NET) tek panelde toplanır.
@@ -14,6 +16,11 @@ production backend logları (Spring Boot, Ktor, FastAPI, Laravel, .NET) tek pane
   canlı sohbet, presence, gerçek-zamanlı bildirim (WebSocket).
 - **Mobil API** — tek native uygulama, kullanıcı kendi sunucu URL'ini QR ile ekler
   (self-hosted istemci deseni). Detay: [`documents/09-api.md`](documents/09-api.md).
+- **MCP entegrasyonu** — kendi AI aracınızı (Claude Code, Claude Desktop, Cursor…) LogLens'e
+  bağlayın; hata verisini okusun, kaynak koda bağlasın, düzeltip not düşsün. Detay:
+  [`documents/11-mcp.md`](documents/11-mcp.md).
+- **Çok dilli** — arayüz Türkçe/İngilizce (Profil menüsünden, kullanıcı bazlı); LLM'in
+  ürettiği başlık/özet dili ayrıca Ayarlar'dan yapılandırılır (serbest metin, tüm ekip için).
 - **Verisi sizde kalır** — kendi altyapınızda çalışır, üçüncü bir SaaS'a veri gitmez.
 
 ## Hızlı başlangıç (Docker Compose)
@@ -52,6 +59,7 @@ Uçtan uca kullanıcı dokümanı [`documents/`](documents/) altında (Türkçe)
 | 8 | [Kurulum & Deploy (Coolify)](documents/08-kurulum-deploy.md) |
 | 9 | [API Referansı (mobil dahil)](documents/09-api.md) |
 | 10 | [Ortam Değişkenleri (.env)](documents/10-env-degiskenleri.md) |
+| 11 | [MCP Entegrasyonu](documents/11-mcp.md) |
 
 ## Mimari
 

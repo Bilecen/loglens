@@ -8,11 +8,13 @@ import {
   SEVERITIES, ORIGINS, ORIGIN_LABEL, originLabel,
   STATUSES, statusLabel, sevClass, timeAgo, llmLabel,
 } from "./labels";
+import { useLocale } from "./i18n";
 
 const PAGE_SIZE = 8;
 const TERMINAL = new Set(["resolved", "ignored"]);
 
 export default function Errors() {
+  const { t } = useLocale();
   const { user, isAdmin } = useAuth();
   const { projectId } = useProject();
   const [clusters, setClusters] = useState([]);
@@ -69,27 +71,27 @@ export default function Errors() {
     <div className="anim-in">
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-[22px] font-extrabold tracking-tight">Hatalar</h2>
-          <p className="text-muted text-[13px] mt-1">Grupları filtrele, durumunu yönet, kaynak koda in.</p>
+          <h2 className="text-[22px] font-extrabold tracking-tight">{t("errors.title")}</h2>
+          <p className="text-muted text-[13px] mt-1">{t("errors.subtitle")}</p>
         </div>
-        <button className="btn" onClick={() => setShowIngest(true)}>+ Test logu</button>
+        <button className="btn" onClick={() => setShowIngest(true)}>{t("errors.testLog")}</button>
       </div>
 
       <section className="flex flex-wrap gap-2.5 mb-[18px]">
-        <input className="flex-1 min-w-[200px]" placeholder="Başlık / özet ara…" value={q} onChange={(e) => setQ(e.target.value)} />
+        <input className="flex-1 min-w-[200px]" placeholder={t("errors.searchPlaceholder")} value={q} onChange={(e) => setQ(e.target.value)} />
         <select className={selectCls} value={severity} onChange={(e) => setSeverity(e.target.value)}>
-          <option value="">Tüm önem</option>{SEVERITIES.map((s) => <option key={s} value={s}>{s}</option>)}
+          <option value="">{t("errors.allSeverities")}</option>{SEVERITIES.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
         <select className={selectCls} value={origin} onChange={(e) => setOrigin(e.target.value)}>
-          <option value="">Tüm kaynaklar</option>{ORIGINS.map((o) => <option key={o} value={o}>{ORIGIN_LABEL[o]}</option>)}
+          <option value="">{t("errors.allOrigins")}</option>{ORIGINS.map((o) => <option key={o} value={o}>{ORIGIN_LABEL[o]}</option>)}
         </select>
         <select className={selectCls} value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option value="">Tüm durumlar</option>{STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
+          <option value="">{t("errors.allStatuses")}</option>{STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
         </select>
         <select className={selectCls} value={sort} onChange={(e) => setSort(e.target.value)}>
-          <option value="last_seen">Son görülme</option>
-          <option value="count">En sık</option>
-          <option value="first_seen">İlk görülme</option>
+          <option value="last_seen">{t("errors.sortLastSeen")}</option>
+          <option value="count">{t("errors.sortMostFrequent")}</option>
+          <option value="first_seen">{t("errors.sortFirstSeen")}</option>
         </select>
       </section>
 
@@ -97,9 +99,9 @@ export default function Errors() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.05fr] gap-[18px] items-start">
         <main className="flex flex-col gap-[11px]">
-          {loading && <div className="text-muted text-sm">Yükleniyor…</div>}
+          {loading && <div className="text-muted text-sm">{t("errors.loading")}</div>}
           {!loading && clusters.length === 0 && (
-            <div className="text-muted py-12 text-center card-surface border-dashed">Hata grubu yok. "+ Test logu" ile bir log gönder.</div>
+            <div className="text-muted py-12 text-center card-surface border-dashed">{t("errors.noClustersEmptyState")}</div>
           )}
           {clusters.map((c) => (
             <button key={c.id} onClick={() => openDetail(c.id)}
@@ -110,14 +112,14 @@ export default function Errors() {
                 <span className={`badge origin-${c.origin || "unknown"}`}>{originLabel(c.origin)}</span>
                 <span className={`badge st-${c.status}`}>{statusLabel(c.status)}</span>
                 {c.llm_ok === false && (
-                  <span className="badge bg-warn-soft text-warn inline-flex items-center gap-1" title="LLM yorumu yok — yeniden yorumla">
-                    <Icon icon="lucide:triangle-alert" size={11} /> yorumlanmadı
+                  <span className="badge bg-warn-soft text-warn inline-flex items-center gap-1" title={t("errors.llmNoInterpretationTitle")}>
+                    <Icon icon="lucide:triangle-alert" size={11} /> {t("errors.notInterpreted")}
                   </span>
                 )}
                 <span className="ml-auto text-[12px] font-bold text-muted bg-surface-2 px-2 rounded-full">{c.occurrence_count}×</span>
               </div>
-              <div className="font-bold mt-2.5 mb-0.5 text-[14.5px] tracking-tight leading-snug">{c.title || "Sınıflandırılmamış hata"}</div>
-              <div className="text-muted text-[12px]">{c.source || "kaynak bilinmiyor"}</div>
+              <div className="font-bold mt-2.5 mb-0.5 text-[14.5px] tracking-tight leading-snug">{c.title || t("errors.unclassifiedError")}</div>
+              <div className="text-muted text-[12px]">{c.source || t("errors.unknownSource")}</div>
               <div className="flex justify-between items-center mt-2.5 text-muted text-[12px]">
                 <span className="font-mono">{c.group_key}</span>
                 <span className="flex items-center gap-1">{c.assignee_name ? <><Icon icon="lucide:user" size={12} /> {c.assignee_name}</> : timeAgo(c.last_seen_at)}</span>
@@ -129,12 +131,12 @@ export default function Errors() {
           {total > 0 && (
             <div className="flex items-center justify-between mt-1 px-1">
               <span className="text-muted text-[12px]">
-                {total} sonuç{total > PAGE_SIZE && <> · sayfa {page + 1}/{pageCount}</>}
+                {t("errors.resultCount", { count: total })}{total > PAGE_SIZE && <> · {t("errors.pageOf", { page: page + 1, pageCount })}</>}
               </span>
               {pageCount > 1 && (
                 <div className="flex gap-1.5">
-                  <button className="btn ghost sm" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>← Önceki</button>
-                  <button className="btn ghost sm" disabled={page >= pageCount - 1} onClick={() => setPage((p) => p + 1)}>Sonraki →</button>
+                  <button className="btn ghost sm" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>{t("errors.previous")}</button>
+                  <button className="btn ghost sm" disabled={page >= pageCount - 1} onClick={() => setPage((p) => p + 1)}>{t("errors.next")}</button>
                 </div>
               )}
             </div>
@@ -143,7 +145,7 @@ export default function Errors() {
 
         <aside className="lg:sticky lg:top-6">
           {!selected ? (
-            <div className="text-muted py-12 text-center card-surface border-dashed">Detay için bir hata grubu seç.</div>
+            <div className="text-muted py-12 text-center card-surface border-dashed">{t("errors.selectClusterForDetail")}</div>
           ) : (
             <Detail data={selected} users={users} me={user} isAdmin={isAdmin} providers={providers}
               onClose={() => setSelected(null)} onUpdated={onUpdated} />
@@ -161,6 +163,7 @@ const lbl = "text-faint text-[11px] uppercase tracking-wide font-bold mt-[18px] 
 function Detail({ data, users, me, isAdmin, providers = [], onClose, onUpdated }) {
   const { cluster: c, occurrences } = data;
   const confirm = useConfirm();
+  const { t } = useLocale();
   const [saving, setSaving] = useState(false);
   const [opinions, setOpinions] = useState(data.opinions || []);
   const [askingProvider, setAskingProvider] = useState(null);
@@ -183,14 +186,14 @@ function Detail({ data, users, me, isAdmin, providers = [], onClose, onUpdated }
   const reinterpret = async () => {
     setReinterpreting(true);
     try { onUpdated(await api.reinterpret(c.id)); }
-    catch (e) { await confirm({ title: "Yeniden yorumlanamadı", message: e.message, confirmText: "Tamam", cancelText: null }); }
+    catch (e) { await confirm({ title: t("errors.reinterpretFailedTitle"), message: e.message, confirmText: t("errors.ok"), cancelText: null }); }
     finally { setReinterpreting(false); }
   };
 
   const askOpinion = async (provider) => {
     setAskingProvider(provider);
     try { const op = await api.clusterOpinion(c.id, provider); setOpinions((l) => [...l, op]); }
-    catch (e) { await confirm({ title: `${llmLabel(provider)} yanıt vermedi`, message: e.message, confirmText: "Tamam", cancelText: null }); }
+    catch (e) { await confirm({ title: t("errors.opinionFailedTitle", { provider: llmLabel(provider) }), message: e.message, confirmText: t("errors.ok"), cancelText: null }); }
     finally { setAskingProvider(null); }
   };
 
@@ -199,23 +202,23 @@ function Detail({ data, users, me, isAdmin, providers = [], onClose, onUpdated }
     // Nihai durumdan geri alma yalnızca admin'e açık.
     if (TERMINAL.has(c.status) && !isAdmin) {
       await confirm({
-        title: "Yetki gerekli",
-        message: `"${statusLabel(c.status)}" nihai bir durum. Geri almak için admin yetkisi gerekir.`,
-        confirmText: "Anladım", cancelText: null,
+        title: t("errors.permissionRequiredTitle"),
+        message: t("errors.permissionRequiredMessage", { status: statusLabel(c.status) }),
+        confirmText: t("errors.understood"), cancelText: null,
       });
       return;
     }
     const toTerminal = TERMINAL.has(next);
     const ok = await confirm({
-      title: "Son kararınız mı?",
-      message: `Durum "${statusLabel(c.status)}" → "${statusLabel(next)}" olarak değişecek.`
-        + (toTerminal ? "\n\nBu nihai bir durum: sonradan yalnızca admin geri alabilir." : ""),
-      confirmText: "Evet, değiştir", danger: toTerminal,
+      title: t("errors.finalDecisionTitle"),
+      message: t("errors.statusChangeMessage", { from: statusLabel(c.status), to: statusLabel(next) })
+        + (toTerminal ? t("errors.terminalStatusHint") : ""),
+      confirmText: t("errors.yesChange"), danger: toTerminal,
     });
     if (!ok) return;
     try { await patch({ status: next }); }
     catch (e) {
-      await confirm({ title: "Değiştirilemedi", message: e.message, confirmText: "Tamam", cancelText: null });
+      await confirm({ title: t("errors.changeFailedTitle"), message: e.message, confirmText: t("errors.ok"), cancelText: null });
     }
   };
 
@@ -228,7 +231,7 @@ function Detail({ data, users, me, isAdmin, providers = [], onClose, onUpdated }
       setNotes((l) => [...l, n]);
       setDraft("");
     } catch (e) {
-      await confirm({ title: "Not eklenemedi", message: e.message, confirmText: "Tamam", cancelText: null });
+      await confirm({ title: t("errors.noteAddFailedTitle"), message: e.message, confirmText: t("errors.ok"), cancelText: null });
     } finally { setPosting(false); }
   };
 
@@ -240,18 +243,18 @@ function Detail({ data, users, me, isAdmin, providers = [], onClose, onUpdated }
       setNotes((l) => l.map((x) => (x.id === note.id ? updated : x)));
       setEditId(null);
     } catch (e) {
-      await confirm({ title: "Düzenlenemedi", message: e.message, confirmText: "Tamam", cancelText: null });
+      await confirm({ title: t("errors.noteEditFailedTitle"), message: e.message, confirmText: t("errors.ok"), cancelText: null });
     }
   };
 
   const removeNote = async (note) => {
-    const ok = await confirm({ title: "Notu sil", message: "Bu not silinsin mi?", confirmText: "Sil", danger: true });
+    const ok = await confirm({ title: t("errors.deleteNoteTitle"), message: t("errors.deleteNoteMessage"), confirmText: t("errors.delete"), danger: true });
     if (!ok) return;
     try {
       await api.deleteNote(c.id, note.id);
       setNotes((l) => l.filter((x) => x.id !== note.id));
     } catch (e) {
-      await confirm({ title: "Silinemedi", message: e.message, confirmText: "Tamam", cancelText: null });
+      await confirm({ title: t("errors.noteDeleteFailedTitle"), message: e.message, confirmText: t("errors.ok"), cancelText: null });
     }
   };
 
@@ -272,27 +275,27 @@ function Detail({ data, users, me, isAdmin, providers = [], onClose, onUpdated }
         <button className="btn ghost sm" onClick={onClose}><Icon icon="lucide:x" size={15} /></button>
       </div>
 
-      <h2 className="mt-3.5 mb-1.5 text-[19px] font-extrabold tracking-tight leading-tight">{c.title || "Sınıflandırılmamış hata"}</h2>
+      <h2 className="mt-3.5 mb-1.5 text-[19px] font-extrabold tracking-tight leading-tight">{c.title || t("errors.unclassifiedError")}</h2>
       <div className="text-muted text-[12.5px] mb-[18px]">
-        <span className="font-mono">{c.group_key}</span> · {c.occurrence_count} olay · {c.source || "kaynak yok"}
+        <span className="font-mono">{c.group_key}</span> · {t("errors.occurrenceCount", { count: c.occurrence_count })} · {c.source || t("errors.noSource")}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <div className={lbl}>Durum</div>
+          <div className={lbl}>{t("errors.status")}</div>
           <select className="w-full" value={c.status} disabled={saving || statusLocked}
             onChange={(e) => onStatusChange(e.target.value)}>
             {STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
           </select>
-          {statusLocked && <div className="text-faint text-[11px] mt-1.5 flex items-center gap-1"><Icon icon="lucide:lock" size={11} /> Nihai durum — geri alma admin yetkisinde.</div>}
+          {statusLocked && <div className="text-faint text-[11px] mt-1.5 flex items-center gap-1"><Icon icon="lucide:lock" size={11} /> {t("errors.terminalStatusLocked")}</div>}
         </div>
         <div>
-          <div className={lbl}>Atanan</div>
+          <div className={lbl}>{t("errors.assignee")}</div>
           <select className="w-full" value={c.assignee_id ?? ""} disabled={saving}
             onChange={(e) => patch({ assignee_id: e.target.value ? Number(e.target.value) : null })}>
-            <option value="">Atanmamış</option>
+            <option value="">{t("errors.unassigned")}</option>
             {assignOptions.filter(Boolean).map((u) => (
-              <option key={u.id} value={u.id}>{u.name || u.email}{u.id === me.id ? " (ben)" : ""}</option>
+              <option key={u.id} value={u.id}>{u.name || u.email}{u.id === me.id ? t("errors.meSuffix") : ""}</option>
             ))}
           </select>
         </div>
@@ -303,10 +306,10 @@ function Detail({ data, users, me, isAdmin, providers = [], onClose, onUpdated }
           style={{ background: "var(--warn-soft)" }}>
           <Icon icon="lucide:triangle-alert" size={16} className="text-warn" />
           <div className="flex-1 min-w-[140px] text-[12.5px] text-warn font-medium">
-            LLM erişilemediği için yorumlanmadı. Sağlayıcı çalışınca yeniden yorumlat.
+            {t("errors.llmUnreachableMessage")}
           </div>
           <button className="btn sm" disabled={reinterpreting} onClick={reinterpret}>
-            {reinterpreting ? "Yorumlanıyor…" : <><Icon icon="lucide:sparkles" size={13} /> Yeniden yorumla</>}
+            {reinterpreting ? t("errors.interpreting") : <><Icon icon="lucide:sparkles" size={13} /> {t("errors.reinterpret")}</>}
           </button>
         </div>
       )}
@@ -314,7 +317,7 @@ function Detail({ data, users, me, isAdmin, providers = [], onClose, onUpdated }
       {c.summary && (
         <div className="mt-[18px] bg-surface-2 border border-line rounded-xl" style={{ padding: "13px 15px" }}>
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-faint text-[11px] uppercase tracking-wide font-bold">LLM yorumu</span>
+            <span className="text-faint text-[11px] uppercase tracking-wide font-bold">{t("errors.llmComment")}</span>
             {c.llm_model && (
               <span className="badge bg-brand-soft text-brand !text-[10px] font-mono normal-case">
                 <Icon icon="lucide:sparkles" size={10} /> {c.llm_model}
@@ -329,12 +332,12 @@ function Detail({ data, users, me, isAdmin, providers = [], onClose, onUpdated }
       {c.llm_ok && (
         <div className="mt-[18px]">
           <div className="flex items-center gap-2 flex-wrap mb-2">
-            <span className="text-faint text-[11px] uppercase tracking-wide font-bold">İkinci görüş</span>
+            <span className="text-faint text-[11px] uppercase tracking-wide font-bold">{t("errors.secondOpinion")}</span>
             {providers.map((p) => (
               <button key={p} className="btn ghost sm" disabled={!!askingProvider} onClick={() => askOpinion(p)}>
                 {askingProvider === p
-                  ? "Soruluyor…"
-                  : <><Icon icon="lucide:sparkles" size={12} /> {llmLabel(p)}'e sor</>}
+                  ? t("errors.asking")
+                  : <><Icon icon="lucide:sparkles" size={12} /> {t("errors.askProvider", { provider: llmLabel(p) })}</>}
               </button>
             ))}
           </div>
@@ -355,16 +358,16 @@ function Detail({ data, users, me, isAdmin, providers = [], onClose, onUpdated }
       {c.source_snippet && (
         <div>
           <div className={lbl}>
-            Kaynak kod {c.source_url && <a href={c.source_url} target="_blank" rel="noreferrer" className="text-brand no-underline hover:underline text-[11px] ml-2 font-semibold normal-case tracking-normal inline-flex items-center gap-0.5">Kaynağı aç <Icon icon="lucide:external-link" size={11} /></a>}
+            {t("errors.sourceCode")} {c.source_url && <a href={c.source_url} target="_blank" rel="noreferrer" className="text-brand no-underline hover:underline text-[11px] ml-2 font-semibold normal-case tracking-normal inline-flex items-center gap-0.5">{t("errors.openSource")} <Icon icon="lucide:external-link" size={11} /></a>}
           </div>
           <pre className="bg-code border border-line-strong rounded-[10px] px-3.5 py-3 overflow-x-auto whitespace-pre leading-relaxed m-0 max-h-[280px] text-[11.5px] font-mono">{c.source_snippet}</pre>
         </div>
       )}
 
       {/* ---------- Not akışı ---------- */}
-      <div className={lbl}>Notlar ({notes.length})</div>
+      <div className={lbl}>{t("errors.notes", { count: notes.length })}</div>
       <div className="flex flex-col gap-2.5">
-        {notes.length === 0 && <div className="text-faint text-[12.5px]">Henüz not yok. İlk notu sen ekle.</div>}
+        {notes.length === 0 && <div className="text-faint text-[12.5px]">{t("errors.noNotesYet")}</div>}
         {notes.map((n) => {
           const mine = n.author_id === me.id;
           const editing = editId === n.id;
@@ -374,15 +377,15 @@ function Detail({ data, users, me, isAdmin, providers = [], onClose, onUpdated }
                 <span className="avatar w-[22px] h-[22px] text-[10px]">
                   {(n.author_name || n.author_email || "?")[0].toUpperCase()}
                 </span>
-                <span className="text-[12.5px] font-semibold">{n.author_name || n.author_email || "Silinmiş kullanıcı"}</span>
+                <span className="text-[12.5px] font-semibold">{n.author_name || n.author_email || t("errors.deletedUser")}</span>
                 <span className="text-faint text-[11px] ml-auto">{timeAgo(n.created_at)}</span>
                 {!editing && (mine || isAdmin) && (
                   <div className="flex items-center gap-0.5">
                     {mine && (
-                      <button className="text-faint hover:text-fg px-1" title="Düzenle"
+                      <button className="text-faint hover:text-fg px-1" title={t("errors.edit")}
                         onClick={() => { setEditId(n.id); setEditDraft(n.body); }}><Icon icon="lucide:pencil" size={13} /></button>
                     )}
-                    <button className="text-faint hover:text-danger px-1" title="Sil"
+                    <button className="text-faint hover:text-danger px-1" title={t("errors.delete")}
                       onClick={() => removeNote(n)}><Icon icon="lucide:trash" size={13} /></button>
                   </div>
                 )}
@@ -392,8 +395,8 @@ function Detail({ data, users, me, isAdmin, providers = [], onClose, onUpdated }
                   <textarea rows={2} value={editDraft} autoFocus onChange={(e) => setEditDraft(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) saveEdit(n); if (e.key === "Escape") setEditId(null); }} />
                   <div className="flex gap-1.5 justify-end">
-                    <button className="btn ghost sm" onClick={() => setEditId(null)}>Vazgeç</button>
-                    <button className="btn sm" disabled={!editDraft.trim()} onClick={() => saveEdit(n)}>Kaydet</button>
+                    <button className="btn ghost sm" onClick={() => setEditId(null)}>{t("errors.cancel")}</button>
+                    <button className="btn sm" disabled={!editDraft.trim()} onClick={() => saveEdit(n)}>{t("errors.save")}</button>
                   </div>
                 </div>
               ) : (
@@ -404,22 +407,22 @@ function Detail({ data, users, me, isAdmin, providers = [], onClose, onUpdated }
         })}
       </div>
       <div className="mt-2.5 flex flex-col gap-2">
-        <textarea rows={2} value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Bir not ekle…"
+        <textarea rows={2} value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={t("errors.addNotePlaceholder")}
           onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) addNote(); }} />
         <div className="flex items-center justify-between">
-          <span className="text-faint text-[11px]">⌘/Ctrl + Enter ile gönder</span>
+          <span className="text-faint text-[11px]">{t("errors.sendHint")}</span>
           <button className="btn sm" disabled={posting || !draft.trim()} onClick={addNote}>
-            {posting ? "Ekleniyor…" : "Not ekle"}
+            {posting ? t("errors.adding") : t("errors.addNote")}
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mt-4">
-        <div><div className={lbl}>İlk sürüm</div><div>{c.first_seen_version || "-"}</div></div>
-        <div><div className={lbl}>Son sürüm</div><div>{c.last_seen_version || "-"}</div></div>
+        <div><div className={lbl}>{t("errors.firstVersion")}</div><div>{c.first_seen_version || "-"}</div></div>
+        <div><div className={lbl}>{t("errors.lastVersion")}</div><div>{c.last_seen_version || "-"}</div></div>
       </div>
 
-      <div className={lbl}>Son olaylar ({occurrences.length})</div>
+      <div className={lbl}>{t("errors.recentEvents", { count: occurrences.length })}</div>
       <div className="flex flex-col gap-2.5 max-h-[320px] overflow-auto">
         {occurrences.map((o) => (
           <div key={o.id} className="bg-surface-2 border border-line rounded-[10px] px-3 py-2.5">
@@ -443,6 +446,7 @@ const SAMPLE = {
 };
 
 function IngestModal({ open, onClose, onDone }) {
+  const { t } = useLocale();
   const [form, setForm] = useState(SAMPLE);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
@@ -455,28 +459,28 @@ function IngestModal({ open, onClose, onDone }) {
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Test logu gönder" size={480}
+    <Modal open={open} onClose={onClose} title={t("errors.sendTestLogTitle")} size={480}
       footer={
         <>
-          <button className="btn ghost" onClick={onClose}>Kapat</button>
-          {result && <button className="btn ghost" onClick={onDone}>Kapat & yenile</button>}
-          <button className="btn" onClick={submit} disabled={busy}>{busy ? "Gönderiliyor…" : "Gönder"}</button>
+          <button className="btn ghost" onClick={onClose}>{t("errors.close")}</button>
+          {result && <button className="btn ghost" onClick={onDone}>{t("errors.closeAndRefresh")}</button>}
+          <button className="btn" onClick={submit} disabled={busy}>{busy ? t("errors.sending") : t("errors.send")}</button>
         </>
       }>
-      <label className="field-label">Mesaj</label>
+      <label className="field-label">{t("errors.message")}</label>
       <input value={form.message} onChange={set("message")} />
-      <label className="field-label">Hata tipi</label>
+      <label className="field-label">{t("errors.errorType")}</label>
       <input value={form.error_type || ""} onChange={set("error_type")} />
-      <label className="field-label">Stack trace</label>
+      <label className="field-label">{t("errors.stackTrace")}</label>
       <textarea rows={4} value={form.stack_trace || ""} onChange={set("stack_trace")} />
       <div className="grid grid-cols-2 gap-3">
-        <div><label className="field-label">Sürüm</label><input value={form.app_version || ""} onChange={set("app_version")} /></div>
-        <div><label className="field-label">Platform</label><input value={form.platform || ""} onChange={set("platform")} /></div>
+        <div><label className="field-label">{t("errors.version")}</label><input value={form.app_version || ""} onChange={set("app_version")} /></div>
+        <div><label className="field-label">{t("errors.platform")}</label><input value={form.platform || ""} onChange={set("platform")} /></div>
       </div>
       {err && <div className="mt-3 bg-danger-soft text-danger rounded-[10px] px-3.5 py-2.5 text-[13px]">{err}</div>}
       {result && (
         <div className={`mt-3.5 px-3.5 py-2.5 rounded-[10px] border text-[13px] ${result.status === "new_cluster" ? "border-ok bg-ok-soft" : "border-line bg-surface-2"}`}>
-          <b>{result.status}</b>{result.match && <> · eşleşme: {result.match}</>} · {result.group_key} · {result.occurrence_count}×
+          <b>{result.status}</b>{result.match && <> · {t("errors.matchLabel", { match: result.match })}</>} · {result.group_key} · {result.occurrence_count}×
         </div>
       )}
     </Modal>

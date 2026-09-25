@@ -23,6 +23,7 @@ top_frames=5
 
 # ---------------- LLM sağlayıcısı ----------------
 llm_provider=local                # local | ollama | openai | gemini | claude
+response_language=Türkçe          # LLM'in başlık/özet ürettiği dil (serbest metin, örn. English)
 
 # LM Studio (yerel, OpenAI uyumlu)
 local_base_url=http://host.docker.internal:1234/v1
@@ -67,6 +68,7 @@ source_context_lines=6
 | `similarity_threshold` | — | Anlamsal gruplama eşiği. |
 | `top_frames` | — | Fingerprint için stack'in üst N frame'i. |
 | `llm_provider` | — | `local` / `ollama` / `openai` / `gemini` / `claude`. Ayarlar panelinden de değişir. |
+| `response_language` | — | LLM'in başlık/özet ürettiği dil (serbest metin, örn. "English"). Tüm ekip için ortak. |
 | `local_*` | — | LM Studio base URL + model (+ opsiyonel key). |
 | `ollama_*` | — | Ollama base URL + model. |
 | `openai_*` | — | OpenAI (GPT) kullanacaksan. |

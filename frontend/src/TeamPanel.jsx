@@ -5,16 +5,23 @@ import { useRealtime } from "./realtime";
 import Icon from "./Icon";
 import Avatar from "./Avatar";
 import { roleLabel, timeAgo } from "./labels";
+import { useLocale } from "./i18n";
 
 export const PRESENCE = {
-  available: { label: "Müsait", color: "#10b981" },
-  away: { label: "Dışarıda", color: "#f59e0b" },
-  busy: { label: "Meşgul", color: "#ef4444" },
+  available: { color: "#10b981" },
+  away: { color: "#f59e0b" },
+  busy: { color: "#ef4444" },
 };
 
 export default function TeamPanel({ open, onClose }) {
   const { user } = useAuth();
+  const { t } = useLocale();
   const { send: wsSend, subscribe, connected } = useRealtime();
+  const PRESENCE_LABELS = {
+    available: t("team.presenceAvailable"),
+    away: t("team.presenceAway"),
+    busy: t("team.presenceBusy"),
+  };
   const [team, setTeam] = useState([]);
   const [messages, setMessages] = useState([]);
   const [draft, setDraft] = useState("");
@@ -64,7 +71,7 @@ export default function TeamPanel({ open, onClose }) {
         {/* Başlık + durum */}
         <div className="px-4 pt-4 pb-3 border-b border-line shrink-0">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-[15px] font-extrabold flex items-center gap-2"><Icon icon="lucide:users" size={17} /> Ekip</h3>
+            <h3 className="text-[15px] font-extrabold flex items-center gap-2"><Icon icon="lucide:users" size={17} /> {t("team.title")}</h3>
             <button className="btn ghost sm" onClick={onClose}><Icon icon="lucide:x" size={15} /></button>
           </div>
           {/* Kendi durumun */}
@@ -78,7 +85,7 @@ export default function TeamPanel({ open, onClose }) {
                   style={{ background: active ? "var(--panel)" : "transparent",
                            color: active ? "var(--text)" : "var(--muted)",
                            boxShadow: active ? "0 1px 2px rgba(0,0,0,.08)" : "none" }}>
-                  <span className="w-2 h-2 rounded-full" style={{ background: cfg.color }} /> {cfg.label}
+                  <span className="w-2 h-2 rounded-full" style={{ background: cfg.color }} /> {PRESENCE_LABELS[key]}
                 </button>
               );
             })}
@@ -87,7 +94,7 @@ export default function TeamPanel({ open, onClose }) {
 
         {/* Sekme */}
         <div className="flex gap-1 px-3 pt-2 shrink-0">
-          {[["chat", "Sohbet"], ["team", "Ekip"]].map(([k, l]) => (
+          {[["chat", t("team.tabChat")], ["team", t("team.tabTeam")]].map(([k, l]) => (
             <button key={k} onClick={() => setTab(k)}
               className={`px-3 py-1.5 rounded-lg text-[12.5px] font-semibold ${tab === k ? "bg-brand-soft text-brand" : "text-muted hover:bg-surface-2"}`}>{l}</button>
           ))}
@@ -99,7 +106,7 @@ export default function TeamPanel({ open, onClose }) {
             {team.map((u) => {
               const p = PRESENCE[u.presence] || PRESENCE.available;
               const dot = u.online ? p.color : "#9ca3af";          // çevrimdışı → gri
-              const label = u.online ? p.label : "Çevrimdışı";
+              const label = u.online ? (PRESENCE_LABELS[u.presence] || PRESENCE_LABELS.available) : t("team.offline");
               return (
                 <div key={u.id} className={`flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-surface-2 ${u.online ? "" : "opacity-60"}`}>
                   <div className="relative">
@@ -107,7 +114,7 @@ export default function TeamPanel({ open, onClose }) {
                     <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2" style={{ background: dot, borderColor: "var(--panel)" }} />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-[13px] font-semibold truncate">{u.name || u.email}{u.me ? " (ben)" : ""}</div>
+                    <div className="text-[13px] font-semibold truncate">{u.name || u.email}{u.me ? t("team.meSuffix") : ""}</div>
                     <div className="text-faint text-[11px]">{roleLabel(u.role)} · {label}</div>
                   </div>
                 </div>
@@ -117,7 +124,7 @@ export default function TeamPanel({ open, onClose }) {
         ) : (
           <>
             <div className="flex-1 overflow-auto px-3 py-3 flex flex-col gap-0.5">
-              {messages.length === 0 && <div className="text-faint text-[12.5px] text-center py-8">Henüz mesaj yok. İlk mesajı sen yaz 👋</div>}
+              {messages.length === 0 && <div className="text-faint text-[12.5px] text-center py-8">{t("team.noMessages")}</div>}
               {messages.map((m, i) => {
                 const mine = m.user_id === user.id;
                 const prev = messages[i - 1];
@@ -127,7 +134,7 @@ export default function TeamPanel({ open, onClose }) {
                 return (
                   <div key={m.id} className={`flex flex-col ${mine ? "items-end" : "items-start"} ${firstOfGroup ? "mt-2.5" : ""}`}>
                     {firstOfGroup && (
-                      <span className="text-[11px] font-bold mb-0.5 px-1">{mine ? "Sen" : name}</span>
+                      <span className="text-[11px] font-bold mb-0.5 px-1">{mine ? t("team.you") : name}</span>
                     )}
                     <div className={`max-w-[82%] px-3 py-2 rounded-2xl text-[12.5px] leading-snug break-words ${mine ? "bg-brand text-white rounded-br-sm" : "bg-surface-2 border border-line rounded-bl-sm"}`}>
                       {m.body}
@@ -141,7 +148,7 @@ export default function TeamPanel({ open, onClose }) {
             <div className="p-3 border-t border-line shrink-0 flex items-end gap-2">
               <textarea rows={1} value={draft} onChange={(e) => setDraft(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-                placeholder="Mesaj yaz…" className="resize-none py-2" />
+                placeholder={t("team.messagePlaceholder")} className="resize-none py-2" />
               <button className="btn sm h-[38px]" disabled={!draft.trim()} onClick={send}><Icon icon="lucide:send" size={15} /></button>
             </div>
           </>

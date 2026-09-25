@@ -3,13 +3,14 @@ import { useEffect, useState } from "react";
 const THEME_KEY = "loglens_theme";
 const STYLE_KEY = "loglens_style";
 
-// Seçilebilir tasarım stilleri (data-style ile CSS override edilir).
+// Seçilebilir tasarım stilleri (data-style ile CSS override edilir). label/hint metinleri
+// i18n anahtarı — ProfileMenu.jsx t() ile çözer (bu dosya component olmadığı için hook kullanamaz).
 export const STYLES = [
-  { key: "default", label: "Varsayılan", hint: "Modern SaaS" },
-  { key: "neomorphism", label: "Neomorphism", hint: "Yumuşak kabartma" },
-  { key: "neominimal", label: "Neo-minimalizm", hint: "Düz, ince çizgi" },
-  { key: "neofuturism", label: "Neo-fütürizm", hint: "Neon + cam" },
-  { key: "neoclassic", label: "Neo-klasizm", hint: "Serif, sıcak" },
+  { key: "default", labelKey: "profileMenu.styles.default.label", hintKey: "profileMenu.styles.default.hint" },
+  { key: "neomorphism", labelKey: "profileMenu.styles.neomorphism.label", hintKey: "profileMenu.styles.neomorphism.hint" },
+  { key: "neominimal", labelKey: "profileMenu.styles.neominimal.label", hintKey: "profileMenu.styles.neominimal.hint" },
+  { key: "neofuturism", labelKey: "profileMenu.styles.neofuturism.label", hintKey: "profileMenu.styles.neofuturism.hint" },
+  { key: "neoclassic", labelKey: "profileMenu.styles.neoclassic.label", hintKey: "profileMenu.styles.neoclassic.hint" },
 ];
 
 export function useTheme() {

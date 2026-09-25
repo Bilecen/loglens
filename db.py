@@ -656,6 +656,48 @@ async def delete_refresh_token(token_hash: str) -> None:
         await conn.execute("DELETE FROM refresh_tokens WHERE token_hash = %s", (token_hash,))
 
 
+async def create_mcp_token(user_id: int, token_hash: str, name: str | None) -> dict:
+    async with _pool.connection() as conn:
+        cur = await conn.execute(
+            """INSERT INTO mcp_tokens (user_id, token_hash, name)
+               VALUES (%s, %s, %s) RETURNING id, name, created_at, last_used_at""",
+            (user_id, token_hash, name))
+        row = await cur.fetchone()
+    return {"id": row[0], "name": row[1],
+            "created_at": row[2].isoformat() if row[2] else None,
+            "last_used_at": row[3].isoformat() if row[3] else None}
+
+
+async def list_mcp_tokens(user_id: int) -> list[dict]:
+    async with _pool.connection() as conn:
+        cur = await conn.execute(
+            """SELECT id, name, created_at, last_used_at FROM mcp_tokens
+               WHERE user_id = %s ORDER BY created_at DESC""",
+            (user_id,))
+        rows = await cur.fetchall()
+    return [{"id": r[0], "name": r[1],
+             "created_at": r[2].isoformat() if r[2] else None,
+             "last_used_at": r[3].isoformat() if r[3] else None} for r in rows]
+
+
+async def get_mcp_user_id(token_hash: str) -> int | None:
+    """Geçerli bir MCP anahtarının kullanıcısı; bulunursa last_used_at güncellenir."""
+    async with _pool.connection() as conn:
+        cur = await conn.execute(
+            "UPDATE mcp_tokens SET last_used_at = now() WHERE token_hash = %s RETURNING user_id",
+            (token_hash,))
+        r = await cur.fetchone()
+    return r[0] if r else None
+
+
+async def revoke_mcp_token(user_id: int, token_id: int) -> bool:
+    """Yalnızca sahibi iptal edebilir."""
+    async with _pool.connection() as conn:
+        cur = await conn.execute(
+            "DELETE FROM mcp_tokens WHERE id = %s AND user_id = %s", (token_id, user_id))
+        return cur.rowcount > 0
+
+
 async def create_user(email: str, name: str | None, password_hash: str, role: str) -> dict:
     async with _pool.connection() as conn:
         cur = await conn.execute(

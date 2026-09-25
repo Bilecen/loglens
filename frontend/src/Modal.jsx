@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Icon from "./Icon";
+import { useLocale } from "./i18n";
 
 // Temaya uygun genel modal kabuğu (IngestModal ile aynı dil).
 // backdrop tıklaması + ESC ile kapanır.
@@ -45,6 +46,7 @@ const ConfirmCtx = createContext(async () => false);
 export const useConfirm = () => useContext(ConfirmCtx);
 
 export function ConfirmProvider({ children }) {
+  const { t } = useLocale();
   const [state, setState] = useState(null); // { opts, resolve }
 
   const confirm = useCallback((opts) => new Promise((resolve) => {
@@ -58,15 +60,15 @@ export function ConfirmProvider({ children }) {
     <ConfirmCtx.Provider value={confirm}>
       {children}
       <Modal open={!!state} onClose={() => close(false)} size={410}
-        title={o.title || "Emin misiniz?"}
+        title={o.title || t("common.confirmTitle")}
         footer={
           <>
             {o.cancelText !== null && (
-              <button className="btn ghost" onClick={() => close(false)}>{o.cancelText || "Vazgeç"}</button>
+              <button className="btn ghost" onClick={() => close(false)}>{o.cancelText || t("common.cancel")}</button>
             )}
             <button className="btn" onClick={() => close(true)} autoFocus
               style={o.danger ? { background: "var(--danger)", borderColor: "transparent", color: "#fff" } : undefined}>
-              {o.confirmText || "Onayla"}
+              {o.confirmText || t("common.confirm")}
             </button>
           </>
         }>

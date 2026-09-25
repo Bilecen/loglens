@@ -26,10 +26,13 @@ import auth
 import datasources
 import db
 import embedding
+import mcp_server
 import realtime
 from routers import (auth as auth_router, clusters, datasources as datasources_router,
-                     ingest, notifications, projects, repos,
+                     ingest, mcp_tokens, notifications, projects, repos,
                      settings, stats, system, team, users, webhooks)
+
+_mcp_asgi_app, _mcp_inner_app = mcp_server.build()
 
 
 @asynccontextmanager
@@ -37,7 +40,8 @@ async def lifespan(app: FastAPI):
     embedding.load_model()
     await db.open_pool()
     scheduler = asyncio.create_task(datasources.scheduler_loop())  # otomatik veri kaynakları
-    yield
+    async with _mcp_inner_app.router.lifespan_context(_mcp_inner_app):  # MCP session manager
+        yield
     scheduler.cancel()
     await db.close_pool()
 
@@ -52,8 +56,10 @@ app.add_middleware(
 )
 
 for module in (auth_router, ingest, system, stats, projects, clusters, users, repos,
-               settings, webhooks, notifications, team, datasources_router):
+               settings, webhooks, notifications, team, datasources_router, mcp_tokens):
     app.include_router(module.router)
+
+app.mount("/mcp", _mcp_asgi_app)  # Model Context Protocol — bkz. mcp_server.py
 
 
 @app.websocket("/ws")

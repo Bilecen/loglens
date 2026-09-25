@@ -4,8 +4,10 @@ import { useAuth } from "./auth";
 import { useRealtime } from "./realtime";
 import Icon from "./Icon";
 import { timeAgo } from "./labels";
+import { useLocale } from "./i18n";
 
 export default function NotificationBell() {
+  const { t } = useLocale();
   const { user } = useAuth();
   const { subscribe } = useRealtime();
   const [data, setData] = useState({ items: [], unread: 0 });
@@ -38,7 +40,7 @@ export default function NotificationBell() {
     <div className="relative">
       <button onClick={() => setOpen((o) => !o)}
         className="relative w-[36px] h-[36px] rounded-lg grid place-items-center text-muted hover:text-fg hover:bg-surface-2 transition"
-        title="Bildirimler">
+        title={t("notifications.title")}>
         <Icon icon="lucide:bell" size={18} />
         {data.unread > 0 && (
           <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-danger text-white text-[10px] font-bold grid place-items-center">
@@ -52,15 +54,15 @@ export default function NotificationBell() {
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute right-0 mt-2 w-[320px] card-surface shadow-2xl z-50 anim-in overflow-hidden">
             <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-line">
-              <span className="font-bold text-[13.5px]">Bildirimler</span>
+              <span className="font-bold text-[13.5px]">{t("notifications.title")}</span>
               {data.unread > 0 && (
                 <button className="text-brand text-[11.5px] font-semibold hover:underline flex items-center gap-1"
-                  onClick={readAll}><Icon icon="lucide:check-check" size={13} /> Hepsini okundu</button>
+                  onClick={readAll}><Icon icon="lucide:check-check" size={13} /> {t("notifications.markAllRead")}</button>
               )}
             </div>
             <div className="max-h-[380px] overflow-auto">
               {data.items.length === 0 ? (
-                <div className="text-faint text-[12.5px] text-center py-8">Bildirim yok</div>
+                <div className="text-faint text-[12.5px] text-center py-8">{t("notifications.empty")}</div>
               ) : data.items.map((n) => (
                 <button key={n.id} onClick={() => readOne(n)}
                   className={`w-full text-left px-3.5 py-2.5 border-b border-line last:border-0 hover:bg-surface-2 transition-colors flex gap-2.5 ${n.is_read ? "opacity-60" : ""}`}>
