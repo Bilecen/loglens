@@ -1,0 +1,35 @@
+{
+  "_comment": "Crashlytics -> BigQuery export'unda BIR crash satırı yaklaşık böyle görünür. bridge/crashlytics_to_loglens.py bu satırı okuyup LogLens'in LogIn şemasına eşler. Sunumda 'kaynak veri' olarak gösterebilirsin; sahtedir, gerçek hesap gerektirmez.",
+  "event_id": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+  "event_timestamp": "2026-09-24 08:12:44.512000 UTC",
+  "issue_id": "5f3c9a2b1d",
+  "issue_title": "HomeScreen.kt line 42",
+  "issue_subtitle": "com.app.ui.HomeScreen.render",
+  "is_fatal": true,
+  "bundle_identifier": "com.app",
+  "application": {
+    "display_version": "1.4.2",
+    "build_version": "1420"
+  },
+  "device": {
+    "manufacturer": "Samsung",
+    "model": "SM-G991B"
+  },
+  "operating_system": {
+    "display_name": "android",
+    "display_version": "14",
+    "type": "OPERATING_SYSTEM"
+  },
+  "exceptions": [
+    {
+      "type": "java.lang.NullPointerException",
+      "exception_message": "Attempt to invoke virtual method 'java.lang.String com.app.model.User.getId()' on a null object reference",
+      "nested": false,
+      "frames": [
+        { "file": "HomeScreen.kt", "line": 42, "symbol": "com.app.ui.HomeScreen.render", "offset": 0, "library": "com.app" },
+        { "file": "HomeScreen.kt", "line": 31, "symbol": "com.app.ui.HomeScreen.onResume", "offset": 1, "library": "com.app" },
+        { "file": "Activity.java", "line": 8102, "symbol": "android.app.Activity.performResume", "offset": 2, "library": "android" }
+      ]
+    }
+  ]
+}

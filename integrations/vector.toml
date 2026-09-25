@@ -1,0 +1,80 @@
+# Vector -> LogLens drain (Coolify / herhangi bir Docker host için)
+# Host'taki TÜM container loglarını dinler, ERROR seviyesindekileri LogLens'in
+# token'lı batch drain endpoint'ine POST eder. Uygulamalara DOKUNMADAN çalışır.
+#
+# Kurulum (Coolify host'unda, tek container olarak):
+#   docker run -d --name vector \
+#     -v /var/run/docker.sock:/var/run/docker.sock:ro \
+#     -v $PWD/vector.toml:/etc/vector/vector.toml:ro \
+#     timberio/vector:latest-alpine
+#
+# En iyi sonuç: uygulamalar JSON log yazsın (Spring: logstash-encoder, Laravel:
+# Monolog JSON, FastAPI: python-json-logger, .NET: Serilog JSON). O zaman level ve
+# stack alanları net gelir. Düz metinde de heuristik ile ERROR yakalanır.
+
+# ---- Kaynak: tüm container stdout/stderr (Docker API üzerinden) ----
+[sources.docker]
+type = "docker_logs"
+# SADECE prod: Coolify prod ortamına verdiğin bir label'la sınırla (dev karışmasın).
+# include_labels = ["coolify.environment=production"]
+
+# ---- Çok satırlı stack trace'leri tek olaya birleştir (Java/.NET/Python) ----
+[transforms.merged]
+type = "reduce"
+inputs = ["docker"]
+group_by = ["container_name"]
+# Yeni bir log satırı (zaman damgasıyla başlayan) yeni olayı başlatır;
+# "  at ...", "Caused by:", "Traceback" gibi satırlar öncekine eklenir.
+merge_strategies.message = "concat_newline"
+starts_when = '''
+match(to_string(.message) ?? "", r'^\d{4}-\d{2}-\d{2}|^\{')
+'''
+
+# ---- JSON parse et (JSON log'sa), değilse ham message'ı koru ----
+[transforms.parsed]
+type = "remap"
+inputs = ["merged"]
+source = '''
+parsed = parse_json(.message) ?? {}
+.level = downcase(to_string(parsed.level) ?? to_string(parsed.severity) ?? "")
+.body  = to_string(parsed.message) ?? to_string(parsed.msg) ?? to_string(.message) ?? ""
+.stack = to_string(parsed.stack_trace) ?? to_string(parsed.stack) ?? to_string(parsed.exception) ?? ""
+.etype = to_string(parsed.error_type) ?? to_string(parsed.exception_class) ?? ""
+.ver   = to_string(parsed.version) ?? ""
+'''
+
+# ---- Sadece HATA olanları geçir ----
+[transforms.errors]
+type = "filter"
+inputs = ["parsed"]
+condition = '''
+includes(["error","fatal","critical","err"], .level) ||
+match(.body, r'(?i)exception|error|panic|traceback|fatal') ||
+.stack != ""
+'''
+
+# ---- LogLens LogIn şekline çevir ----
+[transforms.shape]
+type = "remap"
+inputs = ["errors"]
+source = '''
+. = {
+  "message":     .body,
+  "stack_trace": if .stack == "" { null } else { .stack },
+  "error_type":  if .etype == "" { null } else { .etype },
+  "app_version": if .ver   == "" { null } else { .ver },
+  "platform":    "service",
+  "source":      to_string(.container_name) ?? "coolify"
+}
+'''
+
+# ---- LogLens'e batch POST (JSON dizisi = list[LogIn]) ----
+[sinks.loglens]
+type = "http"
+inputs = ["shape"]
+uri = "http://LOGLENS_HOST:8000/ingest/hook/PROJE_WEBHOOK_TOKEN/batch"
+method = "post"
+encoding.codec = "json"       # batch'i JSON dizisi olarak gönderir
+batch.max_events = 100
+batch.timeout_secs = 5
+request.retry_attempts = 3

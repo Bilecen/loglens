@@ -1,0 +1,47 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16   # pgvector eklentisi HAZIR gelir
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: logs
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # schema.sql ilk açılışta otomatik çalışır (sadece boş DB'de)
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d logs"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      # DB, compose ağında "db" hostname'iyle erişilir
+      db_dsn: postgresql://postgres:postgres@db:5432/logs
+      embed_model: BAAI/bge-m3
+      embed_dim: "1024"
+      similarity_threshold: "0.88"
+      llm_provider: local
+      # KRİTİK: LM Studio HOST'ta çalışıyor, container ona böyle ulaşır
+      local_base_url: http://host.docker.internal:1234/v1
+      local_model: qwen2.5-7b-instruct
+      # Claude kullanacaksan: llm_provider=claude + anahtarı ver
+      anthropic_api_key: ""
+      claude_model: claude-sonnet-5
+    # NOT: bge-m3 modeli Dockerfile'da imaja gömülüdür (/models). Bu yüzden burada
+    # volume YOK — boş bir named volume gömülü modeli gölgeleyip runtime indirmeyi geri getirirdi.
+    extra_hosts:
+      # Linux'ta host.docker.internal'i çözebilmek için (Mac/Windows'ta gerekmez ama zararsız)
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  pgdata:

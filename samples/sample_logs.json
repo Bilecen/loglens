@@ -1,0 +1,98 @@
+[
+  {
+    "message": "Attempt to invoke virtual method 'java.lang.String com.app.model.User.getId()' on a null object reference",
+    "error_type": "NullPointerException",
+    "stack_trace": "at com.app.ui.HomeScreen.render(HomeScreen.kt:42)\nat com.app.ui.HomeScreen.onResume(HomeScreen.kt:31)\nat android.app.Activity.performResume(Activity.java:8102)",
+    "app_version": "1.4.2",
+    "platform": "android",
+    "source": "firebase"
+  },
+  {
+    "message": "Attempt to invoke virtual method 'java.lang.String com.app.model.User.getId()' on a null object reference",
+    "error_type": "NullPointerException",
+    "stack_trace": "at com.app.ui.HomeScreen.render(HomeScreen.kt:42)\nat com.app.ui.HomeScreen.onResume(HomeScreen.kt:31)\nat android.app.Activity.performResume(Activity.java:8102)",
+    "app_version": "1.4.2",
+    "platform": "android",
+    "source": "firebase"
+  },
+  {
+    "message": "Attempt to invoke virtual method 'java.lang.String com.app.model.User.getId()' on a null object reference",
+    "error_type": "NullPointerException",
+    "stack_trace": "at com.app.ui.HomeScreen.render(HomeScreen.kt:42)\nat com.app.ui.HomeScreen.onResume(HomeScreen.kt:31)\nat android.app.Activity.performResume(Activity.java:8102)",
+    "app_version": "1.4.3",
+    "platform": "android",
+    "source": "firebase"
+  },
+  {
+    "message": "Read timed out after 30000ms calling https://api.example.com/v2/orders/8842193",
+    "error_type": "SocketTimeoutException",
+    "stack_trace": "at okhttp3.internal.http2.Http2Stream.waitForIo(Http2Stream.kt:673)\nat com.app.net.ApiClient.execute(ApiClient.kt:88)\nat com.app.data.OrderRepository.fetch(OrderRepository.kt:24)",
+    "app_version": "1.4.2",
+    "platform": "android",
+    "source": "firebase"
+  },
+  {
+    "message": "Connection timed out while requesting https://api.example.com/v2/orders/9910023",
+    "error_type": "SocketTimeoutException",
+    "stack_trace": "at okhttp3.internal.http2.Http2Stream.waitForIo(Http2Stream.kt:673)\nat com.app.net.ApiClient.execute(ApiClient.kt:88)\nat com.app.data.OrderRepository.fetch(OrderRepository.kt:24)",
+    "app_version": "1.4.2",
+    "platform": "android",
+    "source": "firebase"
+  },
+  {
+    "message": "The network request timed out (api.example.com). Please retry.",
+    "error_type": "NSURLErrorTimedOut",
+    "stack_trace": "at App.Networking.APIClient.send(APIClient.swift:120)\nat App.Data.OrderRepository.fetch(OrderRepository.swift:33)",
+    "app_version": "1.4.2",
+    "platform": "ios",
+    "source": "firebase"
+  },
+  {
+    "message": "Failed to allocate a 24MB bitmap while decoding product image",
+    "error_type": "OutOfMemoryError",
+    "stack_trace": "at android.graphics.BitmapFactory.decodeStream(BitmapFactory.java:648)\nat com.app.image.ImageLoader.decode(ImageLoader.kt:57)\nat com.app.ui.ProductGrid.bind(ProductGrid.kt:112)",
+    "app_version": "1.4.2",
+    "platform": "android",
+    "source": "firebase"
+  },
+  {
+    "message": "Fragment CheckoutFragment{a1b2c3} not attached to a context.",
+    "error_type": "IllegalStateException",
+    "stack_trace": "at androidx.fragment.app.Fragment.requireContext(Fragment.java:900)\nat com.app.checkout.CheckoutFragment.onPayClicked(CheckoutFragment.kt:210)",
+    "app_version": "1.4.3",
+    "platform": "android",
+    "source": "firebase"
+  },
+  {
+    "message": "Index 5 out of bounds for length 5",
+    "error_type": "IndexOutOfBoundsException",
+    "stack_trace": "at java.util.ArrayList.get(ArrayList.java:427)\nat com.app.ui.CartAdapter.onBindViewHolder(CartAdapter.kt:64)\nat androidx.recyclerview.widget.RecyclerView.bind(RecyclerView.java:7231)",
+    "app_version": "1.4.3",
+    "platform": "android",
+    "source": "firebase"
+  },
+  {
+    "message": "Expected BEGIN_OBJECT but was STRING at line 1 column 1 path $ while parsing /v2/profile response",
+    "error_type": "JsonSyntaxException",
+    "stack_trace": "at com.google.gson.Gson.fromJson(Gson.java:963)\nat com.app.net.ApiClient.parse(ApiClient.kt:141)\nat com.app.data.ProfileRepository.load(ProfileRepository.kt:29)",
+    "app_version": "1.4.2",
+    "platform": "android",
+    "source": "firebase"
+  },
+  {
+    "message": "Firebase ID token has expired. Get a fresh token and retry.",
+    "error_type": "FirebaseAuthException",
+    "stack_trace": "at com.google.firebase.auth.FirebaseAuth.getAccessToken(FirebaseAuth.java:512)\nat com.app.auth.SessionManager.refresh(SessionManager.kt:77)",
+    "app_version": "1.4.3",
+    "platform": "android",
+    "source": "firebase"
+  },
+  {
+    "message": "Fatal Exception: EXC_BAD_ACCESS KERN_INVALID_ADDRESS 0x0000000000000010",
+    "error_type": "SIGSEGV",
+    "stack_trace": "at App.Checkout.PaymentViewController.applyDiscount(PaymentViewController.swift:188)\nat App.Checkout.PaymentViewController.viewDidLoad(PaymentViewController.swift:44)",
+    "app_version": "1.4.2",
+    "platform": "ios",
+    "source": "firebase"
+  }
+]
