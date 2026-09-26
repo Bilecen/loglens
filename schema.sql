@@ -43,6 +43,16 @@ CREATE TABLE IF NOT EXISTS error_occurrences (
     seen_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- CMS kullanıcıları. İlk kayıt olan otomatik 'admin' olur (backend'de karar verilir).
+CREATE TABLE IF NOT EXISTS users (
+    id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    email         TEXT        NOT NULL UNIQUE,
+    name          TEXT,
+    password_hash TEXT        NOT NULL,
+    role          TEXT        NOT NULL DEFAULT 'developer',  -- admin | developer | po | tester
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- Refresh token'lar (mobil uzun oturum). Ham token değil, SHA-256 hash'i saklanır.
 CREATE TABLE IF NOT EXISTS refresh_tokens (
     id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -64,16 +74,6 @@ CREATE TABLE IF NOT EXISTS mcp_tokens (
     last_used_at TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS idx_mcp_user ON mcp_tokens (user_id);
-
--- CMS kullanıcıları. İlk kayıt olan otomatik 'admin' olur (backend'de karar verilir).
-CREATE TABLE IF NOT EXISTS users (
-    id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    email         TEXT        NOT NULL UNIQUE,
-    name          TEXT,
-    password_hash TEXT        NOT NULL,
-    role          TEXT        NOT NULL DEFAULT 'developer',  -- admin | developer | po | tester
-    created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
-);
 
 -- Uygulama ayarları (AI/entegrasyon anahtarları vb.) — UI'dan admin düzenler.
 -- .env değerlerini RUNTIME'da geçersiz kılar; boş/eksikse .env fallback devreye girer.
