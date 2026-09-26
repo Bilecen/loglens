@@ -11,9 +11,10 @@ The repo already includes a `Dockerfile` and `docker-compose.yml`.
 ```bash
 docker compose up -d --build
 ```
-- **db** — Postgres with pgvector; `schema.sql` runs automatically on first startup (including
-  the default project + tables).
-- **api** — the backend image.
+- **db** — Postgres with pgvector (starts empty).
+- **api** — the backend image; on startup its own **migration runner** (`app/db/migrations/`)
+  automatically creates/updates the schema (default project + all tables included) — see
+  "Schema updates" below.
 
 ### Embedding model baked into the image
 The backend image **bakes the embedding model** (**bge-m3**) into the image at build time — no
@@ -45,6 +46,7 @@ Provided via `.env` (or compose env):
   (see [Chapter 4](04-entegrasyonlar-en.md)).
 
 ## Schema updates
-In new releases, schema changes are written into `schema.sql` idempotently
-(IF NOT EXISTS / ALTER …); they're applied automatically on a new install, and as a migration
-on an existing install.
+The schema is managed by numbered SQL files under `app/db/migrations/` (`0001_initial.sql`, ...).
+On **every startup** (dev, `docker compose up`, deploying a new image on Coolify) the backend
+automatically applies any migrations that haven't run yet, in order — nothing to do by hand,
+whether it's a fresh install or updating an existing deployment.

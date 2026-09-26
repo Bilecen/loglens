@@ -11,9 +11,9 @@ Depoda `Dockerfile` ve `docker-compose.yml` hazırdır.
 ```bash
 docker compose up -d --build
 ```
-- **db** — pgvector'lı Postgres; `schema.sql` ilk açılışta otomatik çalışır (varsayılan proje +
-  tablolar dahil).
-- **api** — backend imajı.
+- **db** — pgvector'lı Postgres (boş başlar).
+- **api** — backend imajı; açılışta kendi **migration runner**'ı (`app/db/migrations/`) şemayı
+  otomatik kurar/günceller (varsayılan proje + tüm tablolar dahil) — bkz. aşağıdaki "Şema güncellemeleri".
 
 ### Embedding modeli imaja gömülü
 Backend imajı, embedding modelini (**bge-m3**) build sırasında **imaja gömer** — deploy'da
@@ -43,5 +43,7 @@ kullanıldığı için gereksiz CUDA kütüphaneleri imaja girmez.
   (bkz. [4. bölüm](04-entegrasyonlar.md)).
 
 ## Şema güncellemeleri
-Yeni sürümlerde şema değişiklikleri `schema.sql`'de idempotent (IF NOT EXISTS / ALTER …)
-yazılıdır; yeni kurulumda otomatik gelir, mevcut kurulumda migration olarak uygulanır.
+Şema, `app/db/migrations/` altındaki numaralı SQL dosyalarıyla (`0001_initial.sql`, ...)
+yönetilir. Backend **her başlangıçta** (dev, `docker compose up`, Coolify'da yeni image
+deploy) henüz uygulanmamış migration'ları otomatik ve sırayla uygular — hem taze kurulumda
+hem mevcut bir deploy'u güncellerken elle bir şey yapmanız gerekmez.

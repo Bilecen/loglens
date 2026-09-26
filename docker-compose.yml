@@ -9,8 +9,8 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      # schema.sql ilk açılışta otomatik çalışır (sadece boş DB'de)
-      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+      # Şema artık Postgres initdb'siyle değil, uygulamanın kendi migration runner'ıyla
+      # kurulur (app/db/migrations/) — her başlangıçta otomatik, mevcut DB'lerde de güvenli.
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d logs"]
       interval: 5s
