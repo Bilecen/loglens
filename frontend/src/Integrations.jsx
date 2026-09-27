@@ -21,7 +21,8 @@ function CopyButton({ text, className = "btn ghost sm", children }) {
 
 const TABS = [
   { key: "vector", label: "Coolify / Vector", hintKey: "integrations.hintVector" },
-  { key: "spring", label: "Spring Boot / Ktor", hint: "Logback appender" },
+  { key: "springboot", label: "Spring Boot", hint: "Logback appender" },
+  { key: "ktor", label: "Ktor", hint: "Logback appender + logback-classic bağımlılığı" },
   { key: "fastapi", label: "FastAPI", hint: "logging.Handler" },
   { key: "laravel", label: "Laravel", hint: "Monolog handler" },
   { key: "dotnet", label: ".NET", hint: "Serilog sink" },
@@ -61,7 +62,7 @@ method = "post"
 encoding.codec = "json"
 batch.max_events = 100`,
 
-  spring: (url) => `// LogLensAppender.kt — ERROR loglarını LogLens'e yollar (fire-and-forget)
+  springboot: (url) => `// LogLensAppender.kt — ERROR loglarını LogLens'e yollar (fire-and-forget)
 class LogLensAppender : ch.qos.logback.core.AppenderBase<ch.qos.logback.classic.spi.ILoggingEvent>() {
   var url: String = "${url}"
   private val http = java.net.http.HttpClient.newHttpClient()
@@ -78,13 +79,45 @@ class LogLensAppender : ch.qos.logback.core.AppenderBase<ch.qos.logback.classic.
   }
 }
 
-<!-- logback-spring.xml -->
+<!-- logback-spring.xml — Spring Boot bu ismi otomatik yükler -->
 <appender name="LOGLENS" class="com.acme.LogLensAppender"/>
 <appender name="LOGLENS_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
   <filter class="ch.qos.logback.classic.filter.ThresholdFilter"><level>ERROR</level></filter>
   <appender-ref ref="LOGLENS"/>
 </appender>
 <root level="INFO"><appender-ref ref="LOGLENS_ASYNC"/></root>`,
+
+  ktor: (url) => `// LogLensAppender.kt — ERROR loglarını LogLens'e yollar (fire-and-forget)
+class LogLensAppender : ch.qos.logback.core.AppenderBase<ch.qos.logback.classic.spi.ILoggingEvent>() {
+  var url: String = "${url}"
+  private val http = java.net.http.HttpClient.newHttpClient()
+  private val json = com.fasterxml.jackson.databind.ObjectMapper()
+  override fun append(e: ch.qos.logback.classic.spi.ILoggingEvent) {
+    val body = json.writeValueAsString(mapOf(
+      "message" to e.formattedMessage,
+      "stack_trace" to e.throwableProxy?.let { ch.qos.logback.classic.spi.ThrowableProxyUtil.asString(it) },
+      "error_type" to e.throwableProxy?.className, "source" to e.loggerName, "platform" to "service"))
+    val req = java.net.http.HttpRequest.newBuilder(java.net.URI.create(url))
+      .header("Content-Type","application/json")
+      .POST(java.net.http.HttpRequest.BodyPublishers.ofString(body)).build()
+    http.sendAsync(req, java.net.http.HttpResponse.BodyHandlers.discarding())
+  }
+}
+
+// build.gradle.kts — Ktor'da Spring Boot'un aksine logback-classic varsayılan gelmez
+dependencies {
+    implementation("ch.qos.logback:logback-classic:1.4.14")
+}
+
+<!-- src/main/resources/logback.xml — Spring'deki gibi "-spring" son eki YOK, düz logback.xml -->
+<configuration>
+  <appender name="LOGLENS" class="com.acme.LogLensAppender"/>
+  <appender name="LOGLENS_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter"><level>ERROR</level></filter>
+    <appender-ref ref="LOGLENS"/>
+  </appender>
+  <root level="INFO"><appender-ref ref="LOGLENS_ASYNC"/></root>
+</configuration>`,
 
   fastapi: (url) => `import logging, traceback, httpx
 from queue import SimpleQueue
