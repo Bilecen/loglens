@@ -35,6 +35,7 @@
     "copied": "Kopyalandı",
     "hintVector": "Kod değişmeden, tüm servisler",
     "title": "Entegrasyonlar",
+    "projectLabel": "Proje",
     "description": "Production sunucularındaki (Coolify) uygulamaların hatalarını bu projeye akıt.\n          Vector ile kod değişmeden tüm servisler, ya da framework'e küçük bir kod ekleyerek.",
     "noWebhooks": "Bu proje için webhook yok (servis logları için)",
     "noWebhooksHintPrefix": "Servis logları için",

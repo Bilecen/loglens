@@ -153,7 +153,7 @@ builder.Host.UseSerilog();`,
 
 export default function Integrations() {
   const { t } = useLocale();
-  const { projectId } = useProject();
+  const { projects, projectId, setProjectId } = useProject();
   const [hooks, setHooks] = useState([]);
   const [hookId, setHookId] = useState(null);
   const [tab, setTab] = useState("vector");
@@ -179,6 +179,16 @@ export default function Integrations() {
           {t("integrations.description")}
         </p>
       </div>
+
+      {projects.length > 0 && (
+        <div className="card-surface p-[14px] mb-4 flex items-center gap-2.5">
+          <Icon icon="lucide:folder" size={15} className="text-muted shrink-0" />
+          <label className="text-[12.5px] font-semibold text-muted shrink-0">{t("integrations.projectLabel")}</label>
+          <select className="flex-1 max-w-xs" value={projectId ?? ""} onChange={(e) => setProjectId(Number(e.target.value))}>
+            {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+        </div>
+      )}
 
       {/* Firebase/BigQuery otomatik veri kaynakları (webhook'tan bağımsız) */}
       <div className="mb-4"><DataSources projectId={projectId} /></div>

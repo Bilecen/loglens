@@ -35,6 +35,7 @@
     "copied": "Copied",
     "hintVector": "No code changes, all services",
     "title": "Integrations",
+    "projectLabel": "Project",
     "description": "Stream errors from your production (Coolify) applications into this project.\n          With Vector, all services without code changes, or by adding a small snippet to your framework.",
     "noWebhooks": "No webhook for this project (for service logs)",
     "noWebhooksHintPrefix": "For service logs, generate a webhook from the",
