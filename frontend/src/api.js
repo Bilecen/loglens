@@ -1,6 +1,7 @@
 // Backend istemcisi. Dev'de vite proxy sayesinde "/api" -> localhost:8000.
-// JWT token localStorage'da tutulur ve her isteğe Authorization başlığıyla eklenir.
-const BASE = import.meta.env.VITE_API_BASE || "/api";
+// Prod'da backend frontend'i AYNI origin'den sunar (bkz. Dockerfile + app/main.py) —
+// build sırasında VITE_API_BASE="" verilir. "??" şart: "" değeri "||" ile "/api"ye düşerdi.
+const BASE = import.meta.env.VITE_API_BASE ?? "/api";
 const TOKEN_KEY = "loglens_token";
 const REFRESH_KEY = "loglens_refresh";
 

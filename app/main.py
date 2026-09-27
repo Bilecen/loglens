@@ -17,10 +17,13 @@ Bölümler (router'lar):
   - mcp-tokens  MCP erişim anahtarı yönetimi (giriş ister)
 """
 import asyncio
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.core import security as auth
 from app.db import session as db_session
@@ -91,3 +94,23 @@ async def ws_endpoint(ws: WebSocket, token: str = Query(...)):
         uid, now_offline = realtime.manager.disconnect(ws)
         if now_offline:
             await realtime.manager.broadcast({"type": "online", "user_id": uid, "online": False})
+
+
+# ---------------------------------------------------------------------------
+# Frontend (build edilmiş React/Vite) — Docker imajında /app/static altında.
+# Yerel geliştirmede bu klasör yoktur (frontend ayrı `npm run dev` ile çalışır),
+# o yüzden en son ve KOŞULLU eklenir: yukarıdaki tüm API/WS route'ları önce
+# eşleşir (Starlette route'ları kayıt sırasına göre dener), geri kalan her yol
+# (SPA'nın kendi client-side gezinmesi için) index.html'e düşer.
+# ---------------------------------------------------------------------------
+_STATIC_DIR = os.path.join(os.path.dirname(__file__), "..", "static")
+
+if os.path.isdir(_STATIC_DIR):
+    app.mount("/assets", StaticFiles(directory=os.path.join(_STATIC_DIR, "assets")), name="frontend-assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        candidate = os.path.join(_STATIC_DIR, full_path)
+        if full_path and os.path.isfile(candidate):
+            return FileResponse(candidate)
+        return FileResponse(os.path.join(_STATIC_DIR, "index.html"))

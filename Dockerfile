@@ -1,3 +1,14 @@
+# ---- Aşama 1: frontend build (statik dosyalar) ----
+FROM node:20-slim AS frontend-build
+WORKDIR /frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend/ .
+# Prod'da backend aynı origin'den sunar — "/api" prefix'i gerekmez (bkz. api.js).
+ENV VITE_API_BASE=""
+RUN npm run build
+
+# ---- Aşama 2: backend + gömülü frontend ----
 FROM python:3.12-slim
 
 # Model cache buraya iner (compose'ta volume ile kalıcı yapılır)
@@ -18,8 +29,11 @@ RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu 
 ARG EMBED_MODEL=BAAI/bge-m3
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('$EMBED_MODEL')"
 
-# Sonra kod (düz yapı: main.py, db.py, ... kökte)
+# Sonra kod (app/ paketi kökte)
 COPY . .
+
+# Build edilmiş frontend statikleri — app/main.py bunu /app/static'ten sunar.
+COPY --from=frontend-build /frontend/dist ./static
 
 EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
