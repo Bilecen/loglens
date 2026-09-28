@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
-import { tokenStore } from "./api";
+import { tokenStore, BASE } from "./api";
 
 // Tek global WebSocket bağlantısı. Girişten sonra (Shell içinde) mount edilir.
 // Kopunca otomatik yeniden bağlanır. subscribe(fn) ile olayları dinle, send(msg) ile gönder.
@@ -15,7 +15,7 @@ export function RealtimeProvider({ children }) {
     if (!token) return;
     let closed = false, retry;
     const proto = location.protocol === "https:" ? "wss" : "ws";
-    const url = `${proto}://${location.host}/api/ws?token=${encodeURIComponent(token)}`;
+    const url = `${proto}://${location.host}${BASE}/ws?token=${encodeURIComponent(token)}`;
     const connect = () => {
       const ws = new WebSocket(url);
       wsRef.current = ws;

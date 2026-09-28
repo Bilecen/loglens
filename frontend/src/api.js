@@ -1,7 +1,7 @@
 // Backend istemcisi. Dev'de vite proxy sayesinde "/api" -> localhost:8000.
 // Prod'da backend frontend'i AYNI origin'den sunar (bkz. Dockerfile + app/main.py) —
 // build sırasında VITE_API_BASE="" verilir. "??" şart: "" değeri "||" ile "/api"ye düşerdi.
-const BASE = import.meta.env.VITE_API_BASE ?? "/api";
+export const BASE = import.meta.env.VITE_API_BASE ?? "/api";
 const TOKEN_KEY = "loglens_token";
 const REFRESH_KEY = "loglens_refresh";
 
