@@ -25,6 +25,11 @@ Profil menüsündeki **🔑 ikonuna** tıklayın ([7. bölüm](07-profil.md#mcp-
 > oluşturup eskisini iptal edin. Anahtarlar süresiz geçerlidir, istediğiniz zaman iptal
 > edilebilir.
 
+> **Sunucunuz bir domain arkasındaysa (Coolify/Cloudflare vb.):** `PUBLIC_HOST` ortam
+> değişkenini deploy domain'inize ayarlamanız gerekir (örn. `public_host=loglens.example.com`),
+> yoksa MCP istemcileri "Invalid Host header" hatası alır — bkz.
+> [10. Ortam Değişkenleri](10-env-degiskenleri.md#değişken-açıklamaları).
+
 ## 2. AI aracınıza bağlayın
 
 **Claude Code:**
