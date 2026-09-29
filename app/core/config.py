@@ -69,5 +69,24 @@ class Settings(BaseSettings):
     # Stack trace'ten çekilen snippet'te satırın kaç komşusu gösterilsin.
     source_context_lines: int = 6
 
+    # --- Ortam ---
+    # "production" | "development". Test-amaçlı özellikleri (örn. Hatalar sayfasındaki
+    # "Test log" butonu) yalnızca development'ta gösterir. Docker/Coolify deploy'larında
+    # güvenli taraf: varsayılan production.
+    environment: str = "production"
+
+    # MCP sunucusunun (/mcp) DNS-rebinding korumasında izin vereceği Host/Origin.
+    # Boşsa yalnızca localhost'tan MCP erişimi çalışır (kütüphanenin güvenli varsayılanı);
+    # gerçek bir domain arkasında (Coolify/Cloudflare vb.) MCP kullanmak için burada
+    # deploy domain'ini ver, örn. "loglens.example.com".
+    public_host: str = ""
+
+    # Webhook/entegrasyon URL'lerinde kullanılacak şema. Reverse proxy (Cloudflare/Traefik)
+    # TLS'i kendi üstünde sonlandırıp backend'e düz HTTP ile geldiğinde, X-Forwarded-Proto
+    # güvenilir şekilde ayarlanmamışsa üretilen URL yanlışlıkla http:// olur. "auto" önce
+    # X-Forwarded-Proto header'ına bakar, yoksa ham bağlantı şemasını kullanır; kullanıcı
+    # Ayarlar'dan "http"/"https" seçerek bunu ezebilir.
+    public_url_scheme: str = "auto"  # "auto" | "http" | "https"
+
 
 settings = Settings()

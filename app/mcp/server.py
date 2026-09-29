@@ -14,6 +14,7 @@ daha az hareketli parça, self-hosted tek-kiracılı bir sistem için yeterli ve
 import contextvars
 
 from mcp.server.mcpserver import MCPServer
+from mcp.server.transport_security import TransportSecuritySettings
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
@@ -74,9 +75,29 @@ class _BearerAuthMiddleware:
             _current_user_id.reset(reset_token)
 
 
+def _transport_security() -> TransportSecuritySettings | None:
+    """MCP SDK, host="127.0.0.1" varsayılanıyla DNS-rebinding korumasını (Host/Origin
+    allowlist) otomatik açar ve yalnızca localhost'a izin verir — self-hosted kurulum
+    keyfi bir domain'in (Coolify/Cloudflare) arkasında olduğunda bu "Invalid Host header"
+    ile reddeder. Korumayı KAPATMAK yerine, ayarlanmışsa gerçek deploy domain'ini de
+    allowlist'e ekliyoruz; korumanın kendisi açık kalıyor."""
+    if not settings.public_host:
+        return None  # kütüphanenin güvenli varsayılanı: yalnız localhost
+    host = settings.public_host
+    return TransportSecuritySettings(
+        enable_dns_rebinding_protection=True,
+        allowed_hosts=[host, f"{host}:*", "127.0.0.1:*", "localhost:*", "[::1]:*"],
+        allowed_origins=[f"https://{host}", f"http://{host}",
+                         "http://127.0.0.1:*", "http://localhost:*", "http://[::1]:*"],
+    )
+
+
 def build() -> tuple[ASGIApp, Starlette]:
     """(main.py'nin mount edeceği app, lifespan'i main.py'de çalıştırılacak ham Starlette app)."""
-    inner = mcp.streamable_http_app(streamable_http_path="/")
+    inner = mcp.streamable_http_app(
+        streamable_http_path="/",
+        transport_security=_transport_security(),
+    )
     return _BearerAuthMiddleware(inner), inner
 
 

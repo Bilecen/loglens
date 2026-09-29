@@ -35,6 +35,7 @@ function Shell() {
   const { isAdmin } = useAuth();
   const { projects, projectId, setProjectId } = useProject();
   const [view, setView] = useState("dashboard");
+  const [errorsFilter, setErrorsFilter] = useState(null);
   const [health, setHealth] = useState(null);
   const [stats, setStats] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -82,7 +83,7 @@ function Shell() {
               {items.map((n) => {
                 const active = view === n.key;
                 return (
-                  <button key={n.key} onClick={() => setView(n.key)}
+                  <button key={n.key} onClick={() => { setErrorsFilter(null); setView(n.key); }}
                     className={`flex items-center gap-3 px-2.5 py-2 rounded-[9px] text-[13.5px] font-semibold text-left w-full transition-colors
                       ${active ? "bg-brand-soft text-brand" : "text-muted hover:bg-surface-2 hover:text-fg"}`}>
                     <Icon icon={n.icon} size={18} />
@@ -108,8 +109,8 @@ function Shell() {
 
         <main className="flex-1 min-w-0 p-5 md:px-8 md:py-7">
           <div className="max-w-[1240px]">
-            {view === "dashboard" && <Dashboard onOpenErrors={() => setView("errors")} />}
-            {view === "errors" && <Errors />}
+            {view === "dashboard" && <Dashboard onOpenErrors={(f) => { setErrorsFilter(f || null); setView("errors"); }} />}
+            {view === "errors" && <Errors initialFilter={errorsFilter} />}
             {view === "projects" && isAdmin && <Projects />}
             {view === "users" && isAdmin && <Users />}
             {view === "webhooks" && isAdmin && <Webhooks />}

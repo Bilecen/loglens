@@ -29,6 +29,7 @@ KEYS = {
     "gemini_api_key":     (True,  lambda: getattr(settings, "gemini_api_key", "")),
     "github_token":       (True,  lambda: settings.github_token),
     "azure_token":        (True,  lambda: settings.azure_token),
+    "public_url_scheme":  (False, lambda: getattr(settings, "public_url_scheme", "auto")),
 }
 
 SECRET_KEYS = {k for k, (secret, _) in KEYS.items() if secret}

@@ -18,6 +18,7 @@ async def health():
         "api_version": settings.api_version,
         "provider": eff["llm_provider"],
         "embed_model": settings.embed_model,
+        "environment": settings.environment,
         "features": {
             "websocket": True,
             "chat": True,

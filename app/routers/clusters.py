@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from app.core import security as auth
 from app.db import clusters as db
 from app.db import notifications as db_notifications
+from app.db import settings as db_settings
 from app.schemas.cluster import ClusterUpdateIn, NoteIn, OpinionIn
 from app.services import llm, realtime, settings_store
 
@@ -42,6 +43,9 @@ async def cluster_detail(cluster_id: int, user: dict = Depends(auth.get_current_
     return {"cluster": cluster, "occurrences": occurrences, "notes": notes, "opinions": opinions}
 
 
+_API_KEY_FIELD = {"claude": "anthropic_api_key", "openai": "openai_api_key", "gemini": "gemini_api_key"}
+
+
 @router.get("/llm/providers")
 async def llm_providers(user: dict = Depends(auth.get_current_user)):
     """İkinci görüş için kullanılabilir (yapılandırılmış) sağlayıcılar."""
@@ -53,7 +57,15 @@ async def llm_providers(user: dict = Depends(auth.get_current_user)):
         providers.append("gemini")
     if eff.get("anthropic_api_key"):
         providers.append("claude")
-    return {"providers": providers, "active": eff["llm_provider"]}
+    active = eff["llm_provider"]
+    if active in _API_KEY_FIELD:
+        configured = bool(eff.get(_API_KEY_FIELD[active]))
+    else:
+        # local/ollama anahtar istemez — kod içindeki placeholder varsayılanlar hep "dolu"
+        # görünür, o yüzden admin Ayarlar'dan bilinçli olarak base_url/model KAYDETMİŞ mi ona bak.
+        ov = await db_settings.get_settings()
+        configured = bool(ov.get(f"{active}_base_url") or ov.get(f"{active}_model"))
+    return {"providers": providers, "active": active, "configured": configured}
 
 
 @router.patch("/clusters/{cluster_id}")

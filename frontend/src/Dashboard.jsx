@@ -6,15 +6,17 @@ import { BarChart, BreakdownBars, Donut } from "./charts";
 import { ORIGIN_LABEL, STATUS_LABEL } from "./labels";
 import { useLocale } from "./i18n";
 
-function Tile({ label, value, accent }) {
+function Tile({ label, value, accent, onClick }) {
   const bar = { danger: "bg-danger", warn: "bg-warn", ok: "bg-ok" }[accent] || "bg-brand";
   const txt = { danger: "text-danger", warn: "text-warn", ok: "text-ok" }[accent] || "text-fg";
+  const Comp = onClick ? "button" : "div";
   return (
-    <div className="group relative card-surface p-4 overflow-hidden transition-transform hover:-translate-y-0.5 hover:shadow">
+    <Comp type={onClick ? "button" : undefined} onClick={onClick}
+      className={`group relative card-surface p-4 overflow-hidden text-left w-full transition-transform hover:-translate-y-0.5 hover:shadow ${onClick ? "cursor-pointer" : ""}`}>
       <span className={`absolute left-0 top-0 bottom-0 w-[3px] ${bar} opacity-0 group-hover:opacity-100 transition-opacity`} />
       <div className={`text-[27px] font-extrabold tracking-tight leading-none ${txt}`}>{value ?? "—"}</div>
       <div className="text-muted text-[12px] mt-[7px] font-semibold">{label}</div>
-    </div>
+    </Comp>
   );
 }
 
@@ -58,12 +60,12 @@ export default function Dashboard({ onOpenErrors }) {
       </div>
 
       <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 mb-5">
-        <Tile label={t("dashboard.tileErrorGroup")} value={stats?.clusters} />
-        <Tile label={t("dashboard.tileTotalEvents")} value={stats?.occurrences} />
-        <Tile label={t("dashboard.tileOpen")} value={stats?.open} accent="warn" />
-        <Tile label={t("dashboard.tileResolved")} value={stats?.resolved} accent="ok" />
-        <Tile label={t("dashboard.tileCritical")} value={stats?.critical} accent="danger" />
-        <Tile label={t("dashboard.tileHigh")} value={stats?.high} accent="warn" />
+        <Tile label={t("dashboard.tileErrorGroup")} value={stats?.clusters} onClick={() => onOpenErrors()} />
+        <Tile label={t("dashboard.tileTotalEvents")} value={stats?.occurrences} onClick={() => onOpenErrors()} />
+        <Tile label={t("dashboard.tileOpen")} value={stats?.open} accent="warn" onClick={() => onOpenErrors({ status: "open" })} />
+        <Tile label={t("dashboard.tileResolved")} value={stats?.resolved} accent="ok" onClick={() => onOpenErrors({ status: "resolved" })} />
+        <Tile label={t("dashboard.tileCritical")} value={stats?.critical} accent="danger" onClick={() => onOpenErrors({ severity: "critical" })} />
+        <Tile label={t("dashboard.tileHigh")} value={stats?.high} accent="warn" onClick={() => onOpenErrors({ severity: "high" })} />
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -78,8 +80,8 @@ export default function Dashboard({ onOpenErrors }) {
         </Panel>
 
         <Panel title={t("dashboard.sourceDistribution")}><Donut data={bd?.origin || []} labels={ORIGIN_LABEL} /></Panel>
-        <Panel title={t("dashboard.severityLevel")}><BreakdownBars data={bd?.severity || []} /></Panel>
-        <Panel title={t("dashboard.status")}><BreakdownBars data={bd?.status || []} labels={STATUS_LABEL} /></Panel>
+        <Panel title={t("dashboard.severityLevel")}><BreakdownBars data={bd?.severity || []} onSelect={(key) => onOpenErrors({ severity: key })} /></Panel>
+        <Panel title={t("dashboard.status")}><BreakdownBars data={bd?.status || []} labels={STATUS_LABEL} onSelect={(key) => onOpenErrors({ status: key })} /></Panel>
       </div>
     </div>
   );

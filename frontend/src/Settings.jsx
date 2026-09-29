@@ -36,6 +36,7 @@ export default function Settings() {
     setForm({
       llm_provider: d.llm_provider || "local",
       response_language: d.response_language || "Türkçe",
+      public_url_scheme: d.public_url_scheme || "auto",
       claude_model: d.claude_model || "",
       local_base_url: d.local_base_url || "",
       local_model: d.local_model || "",
@@ -63,6 +64,7 @@ export default function Settings() {
     const payload = {
       llm_provider: form.llm_provider,
       response_language: form.response_language,
+      public_url_scheme: form.public_url_scheme,
       claude_model: form.claude_model, local_base_url: form.local_base_url, local_model: form.local_model,
       ollama_base_url: form.ollama_base_url, ollama_model: form.ollama_model,
       openai_base_url: form.openai_base_url, openai_model: form.openai_model,
@@ -204,6 +206,20 @@ export default function Settings() {
           <div className="mt-3 text-faint text-[11.5px]">
             <Icon icon="lucide:lock" size={12} className="inline align-[-0.1em] mr-1" />{t("settings.secretsNeverReturned")}
           </div>
+        </div>
+
+        {/* ---------- Genel / URL şeması ---------- */}
+        <div className="card-surface p-[18px]">
+          <h3 className="text-[14px] font-bold mb-1">{t("settings.generalTitle")}</h3>
+          <p className="text-faint text-[11.5px] mb-2">
+            {t("settings.publicUrlSchemeDesc")}
+          </p>
+          <label className="field-label">{t("settings.publicUrlSchemeLabel")}</label>
+          <select value={form.public_url_scheme} onChange={set("public_url_scheme")}>
+            <option value="auto">{t("settings.publicUrlSchemeAuto")}</option>
+            <option value="http">HTTP</option>
+            <option value="https">HTTPS</option>
+          </select>
         </div>
       </div>
 

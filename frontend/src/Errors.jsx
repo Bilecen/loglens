@@ -13,7 +13,7 @@ import { useLocale } from "./i18n";
 const PAGE_SIZE = 8;
 const TERMINAL = new Set(["resolved", "ignored"]);
 
-export default function Errors() {
+export default function Errors({ initialFilter }) {
   const { t } = useLocale();
   const { user, isAdmin } = useAuth();
   const { projectId } = useProject();
@@ -24,9 +24,9 @@ export default function Errors() {
   const [error, setError] = useState(null);
 
   const [q, setQ] = useState("");
-  const [severity, setSeverity] = useState("");
+  const [severity, setSeverity] = useState(initialFilter?.severity || "");
   const [origin, setOrigin] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState(initialFilter?.status || "");
   const [sort, setSort] = useState("last_seen");
 
   const [selected, setSelected] = useState(null);
@@ -34,10 +34,15 @@ export default function Errors() {
   const [users, setUsers] = useState([]);
 
   const [providers, setProviders] = useState([]);
+  const [llmConfigured, setLlmConfigured] = useState(false);
+  const [showTestLog, setShowTestLog] = useState(false);
 
   // Assignee seçenekleri = projenin ekibi (üyeler).
   useEffect(() => { if (projectId) api.projectMembers(projectId).then(setUsers).catch(() => {}); }, [projectId]);
-  useEffect(() => { api.llmProviders().then((r) => setProviders(r.providers)).catch(() => {}); }, []);
+  useEffect(() => {
+    api.llmProviders().then((r) => { setProviders(r.providers); setLlmConfigured(!!r.configured); }).catch(() => {});
+    api.health().then((h) => setShowTestLog(h.environment !== "production")).catch(() => {});
+  }, []);
 
   // Filtre ya da proje değişince ilk sayfaya dön; açık detayı kapat.
   useEffect(() => { setPage(0); }, [q, severity, origin, status, sort, projectId]);
@@ -54,6 +59,12 @@ export default function Errors() {
   }, [projectId, q, severity, origin, status, sort, page]);
 
   useEffect(() => { const t = setTimeout(load, 250); return () => clearTimeout(t); }, [load]);
+
+  // Sayfa açıkken listeyi kendi kendine tazele — yenilemeden yeni hatalar görünsün.
+  useEffect(() => {
+    const id = setInterval(load, 20000);
+    return () => clearInterval(id);
+  }, [load]);
 
   const openDetail = async (id) => {
     try { setSelected(await api.cluster(id)); } catch (e) { setError(e.message); }
@@ -74,7 +85,12 @@ export default function Errors() {
           <h2 className="text-[22px] font-extrabold tracking-tight">{t("errors.title")}</h2>
           <p className="text-muted text-[13px] mt-1">{t("errors.subtitle")}</p>
         </div>
-        <button className="btn" onClick={() => setShowIngest(true)}>{t("errors.testLog")}</button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button className="btn ghost" onClick={load} disabled={loading} title={t("errors.refresh")}>
+            <Icon icon="lucide:refresh-cw" size={14} className={loading ? "animate-spin" : ""} /> {t("errors.refresh")}
+          </button>
+          {showTestLog && <button className="btn" onClick={() => setShowIngest(true)}>{t("errors.testLog")}</button>}
+        </div>
       </div>
 
       <section className="flex flex-wrap gap-2.5 mb-[18px]">
@@ -147,7 +163,7 @@ export default function Errors() {
           {!selected ? (
             <div className="text-muted py-12 text-center card-surface border-dashed">{t("errors.selectClusterForDetail")}</div>
           ) : (
-            <Detail data={selected} users={users} me={user} isAdmin={isAdmin} providers={providers}
+            <Detail data={selected} users={users} me={user} isAdmin={isAdmin} providers={providers} llmConfigured={llmConfigured}
               onClose={() => setSelected(null)} onUpdated={onUpdated} />
           )}
         </aside>
@@ -160,7 +176,7 @@ export default function Errors() {
 
 const lbl = "text-faint text-[11px] uppercase tracking-wide font-bold mt-[18px] mb-[7px]";
 
-function Detail({ data, users, me, isAdmin, providers = [], onClose, onUpdated }) {
+function Detail({ data, users, me, isAdmin, providers = [], llmConfigured = false, onClose, onUpdated }) {
   const { cluster: c, occurrences } = data;
   const confirm = useConfirm();
   const { t } = useLocale();
@@ -306,11 +322,13 @@ function Detail({ data, users, me, isAdmin, providers = [], onClose, onUpdated }
           style={{ background: "var(--warn-soft)" }}>
           <Icon icon="lucide:triangle-alert" size={16} className="text-warn" />
           <div className="flex-1 min-w-[140px] text-[12.5px] text-warn font-medium">
-            {t("errors.llmUnreachableMessage")}
+            {llmConfigured ? t("errors.llmUnreachableMessage") : t("errors.llmNotConfiguredMessage")}
           </div>
-          <button className="btn sm" disabled={reinterpreting} onClick={reinterpret}>
-            {reinterpreting ? t("errors.interpreting") : <><Icon icon="lucide:sparkles" size={13} /> {t("errors.reinterpret")}</>}
-          </button>
+          {llmConfigured && (
+            <button className="btn sm" disabled={reinterpreting} onClick={reinterpret}>
+              {reinterpreting ? t("errors.interpreting") : <><Icon icon="lucide:sparkles" size={13} /> {t("errors.reinterpret")}</>}
+            </button>
+          )}
         </div>
       )}
 

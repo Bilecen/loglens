@@ -21,3 +21,4 @@ class SettingsIn(BaseModel):
     gemini_api_key: str | None = None
     github_token: str | None = None
     azure_token: str | None = None
+    public_url_scheme: str | None = Field(None, pattern="^(auto|http|https)$")

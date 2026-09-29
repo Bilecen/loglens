@@ -114,15 +114,18 @@ export function BarChart({ data, height = 180 }) {
   );
 }
 
-export function BreakdownBars({ data, labels = {} }) {
+export function BreakdownBars({ data, labels = {}, onSelect }) {
   if (!data?.length) return <Empty h={120} />;
   const total = data.reduce((s, d) => s + d.count, 0) || 1;
   return (
     <div className="flex flex-col gap-3.5">
       {data.map((d) => {
         const pct = (d.count / total) * 100;
+        const Row = onSelect ? "button" : "div";
         return (
-          <div key={d.key} className="flex items-center gap-3">
+          <Row key={d.key} type={onSelect ? "button" : undefined}
+            onClick={onSelect ? () => onSelect(d.key) : undefined}
+            className={`flex items-center gap-3 w-full text-left bg-transparent border-0 p-0 ${onSelect ? "cursor-pointer hover:opacity-80" : ""}`}>
             <span className="w-[92px] text-[12.5px] font-semibold capitalize flex items-center gap-2">
               <span className="w-2 h-2 rounded-full shrink-0" style={{ background: colorFor(d.key) }} />
               {labels[d.key] || d.key}
@@ -135,7 +138,7 @@ export function BreakdownBars({ data, labels = {} }) {
               <span className="font-bold text-fg">{d.count}</span>
               <span className="text-faint ml-1">%{Math.round(pct)}</span>
             </span>
-          </div>
+          </Row>
         );
       })}
     </div>
