@@ -322,6 +322,7 @@
     "notes": "Notes ({count})",
     "noNotesYet": "No notes yet. Add the first one.",
     "deletedUser": "Deleted user",
+    "mcpBadgeTitle": "This note was added via MCP (connected AI tool)",
     "edit": "Edit",
     "delete": "Delete",
     "cancel": "Cancel",

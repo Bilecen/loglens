@@ -225,14 +225,14 @@ def _note_row(r) -> dict:
     return {
         "id": r[0], "cluster_id": r[1], "author_id": r[2], "body": r[3],
         "created_at": r[4].isoformat() if r[4] else None,
-        "author_name": r[5], "author_email": r[6],
+        "author_name": r[5], "author_email": r[6], "origin": r[7],
     }
 
 
 async def list_notes(cluster_id: int) -> list[dict]:
     async with pool().connection() as conn:
         cur = await conn.execute(
-            "SELECT n.id, n.cluster_id, n.author_id, n.body, n.created_at, u.name, u.email "
+            "SELECT n.id, n.cluster_id, n.author_id, n.body, n.created_at, u.name, u.email, n.origin "
             "FROM cluster_notes n LEFT JOIN users u ON u.id = n.author_id "
             "WHERE n.cluster_id = %s ORDER BY n.created_at ASC",
             (cluster_id,),
@@ -241,18 +241,18 @@ async def list_notes(cluster_id: int) -> list[dict]:
     return [_note_row(r) for r in rows]
 
 
-async def add_note(cluster_id: int, author_id: int, body: str) -> dict:
+async def add_note(cluster_id: int, author_id: int, body: str, origin: str = "web") -> dict:
     async with pool().connection() as conn:
         cur = await conn.execute(
-            "INSERT INTO cluster_notes (cluster_id, author_id, body) VALUES (%s, %s, %s) "
-            "RETURNING id, cluster_id, author_id, body, created_at",
-            (cluster_id, author_id, body),
+            "INSERT INTO cluster_notes (cluster_id, author_id, body, origin) VALUES (%s, %s, %s, %s) "
+            "RETURNING id, cluster_id, author_id, body, created_at, origin",
+            (cluster_id, author_id, body, origin),
         )
         r = await cur.fetchone()
         # yazar adını ekle (RETURNING JOIN yapamaz)
         acur = await conn.execute("SELECT name, email FROM users WHERE id = %s", (author_id,))
         a = await acur.fetchone()
-    return _note_row((r[0], r[1], r[2], r[3], r[4], a[0] if a else None, a[1] if a else None))
+    return _note_row((r[0], r[1], r[2], r[3], r[4], a[0] if a else None, a[1] if a else None, r[5]))
 
 
 async def get_note(note_id: int) -> dict | None:
@@ -268,13 +268,13 @@ async def update_note(note_id: int, body: str) -> dict:
     async with pool().connection() as conn:
         cur = await conn.execute(
             "UPDATE cluster_notes SET body = %s WHERE id = %s "
-            "RETURNING id, cluster_id, author_id, body, created_at",
+            "RETURNING id, cluster_id, author_id, body, created_at, origin",
             (body, note_id),
         )
         r = await cur.fetchone()
         acur = await conn.execute("SELECT name, email FROM users WHERE id = %s", (r[2],))
         a = await acur.fetchone()
-    return _note_row((r[0], r[1], r[2], r[3], r[4], a[0] if a else None, a[1] if a else None))
+    return _note_row((r[0], r[1], r[2], r[3], r[4], a[0] if a else None, a[1] if a else None, r[5]))
 
 
 async def delete_note(note_id: int) -> bool:

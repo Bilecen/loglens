@@ -322,6 +322,7 @@
     "notes": "Notlar ({count})",
     "noNotesYet": "Henüz not yok. İlk notu sen ekle.",
     "deletedUser": "Silinmiş kullanıcı",
+    "mcpBadgeTitle": "Bu not MCP (bağlı AI aracı) üzerinden eklendi",
     "edit": "Düzenle",
     "delete": "Sil",
     "cancel": "Vazgeç",

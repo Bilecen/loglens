@@ -396,6 +396,11 @@ function Detail({ data, users, me, isAdmin, providers = [], llmConfigured = fals
                   {(n.author_name || n.author_email || "?")[0].toUpperCase()}
                 </span>
                 <span className="text-[12.5px] font-semibold">{n.author_name || n.author_email || t("errors.deletedUser")}</span>
+                {n.origin === "mcp" && (
+                  <span className="badge bg-brand-soft text-brand !text-[10px] font-mono normal-case" title={t("errors.mcpBadgeTitle")}>
+                    <Icon icon="lucide:plug-zap" size={10} /> MCP
+                  </span>
+                )}
                 <span className="text-faint text-[11px] ml-auto">{timeAgo(n.created_at)}</span>
                 {!editing && (mine || isAdmin) && (
                   <div className="flex items-center gap-0.5">
@@ -403,8 +408,10 @@ function Detail({ data, users, me, isAdmin, providers = [], llmConfigured = fals
                       <button className="text-faint hover:text-fg px-1" title={t("errors.edit")}
                         onClick={() => { setEditId(n.id); setEditDraft(n.body); }}><Icon icon="lucide:pencil" size={13} /></button>
                     )}
-                    <button className="text-faint hover:text-danger px-1" title={t("errors.delete")}
-                      onClick={() => removeNote(n)}><Icon icon="lucide:trash" size={13} /></button>
+                    {isAdmin && (
+                      <button className="text-faint hover:text-danger px-1" title={t("errors.delete")}
+                        onClick={() => removeNote(n)}><Icon icon="lucide:trash" size={13} /></button>
+                    )}
                   </div>
                 )}
               </div>
