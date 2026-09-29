@@ -52,6 +52,11 @@ claude_model=claude-sonnet-5
 github_token=
 azure_token=
 source_context_lines=6
+
+# ---------------- Deploy / prod ----------------
+environment=production             # production | development
+public_host=                       # örn. loglens.example.com — MCP için ZORUNLU (aşağıya bakın)
+public_url_scheme=auto             # auto | http | https
 ```
 
 ## Değişken açıklamaları
@@ -76,6 +81,9 @@ source_context_lines=6
 | `anthropic_api_key`, `claude_model` | — | Claude kullanacaksan. |
 | `github_token`, `azure_token` | — | Kaynak kod eşlemesi için global token (repo bazında da verilebilir). |
 | `source_context_lines` | — | Kaynak snippet'te satırın kaç komşusu gösterilsin. |
+| `environment` | — | `production` (varsayılan) / `development`. Hatalar sayfasındaki "Test log" butonu yalnız `development`'ta görünür. |
+| `public_host` | MCP için ✅ | MCP sunucusunun (`/mcp`) DNS-rebinding korumasında izin verilecek domain, örn. `loglens.example.com`. Boşsa MCP yalnızca `localhost`'tan çalışır — gerçek bir domain arkasında (Coolify/Cloudflare) MCP istemcisi (Claude Code vb.) bağlanmak isteyince "Invalid Host header" alırsınız. |
+| `public_url_scheme` | — | `auto` (varsayılan, `X-Forwarded-Proto`'ya bakar) / `http` / `https`. Webhook URL'lerinin şeması — reverse proxy arkasında `auto` yanlış tahmin ederse burada zorlayın. Ayarlar panelinden de değişir. |
 
 > **Not:** `local_base_url`/`ollama_base_url` container İÇİNDEN host'a erişecekse `host.docker.internal`
 > kullanın. LLM aynı sunucuda değilse gerçek adresini yazın. Sunucuda yerel LLM yoksa `llm_provider=claude`

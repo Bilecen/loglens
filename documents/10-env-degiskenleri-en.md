@@ -53,6 +53,11 @@ claude_model=claude-sonnet-5
 github_token=
 azure_token=
 source_context_lines=6
+
+# ---------------- Deploy / production ----------------
+environment=production             # production | development
+public_host=                       # e.g. loglens.example.com — REQUIRED for MCP (see below)
+public_url_scheme=auto             # auto | http | https
 ```
 
 ## Variable descriptions
@@ -77,6 +82,9 @@ source_context_lines=6
 | `anthropic_api_key`, `claude_model` | — | If you'll use Claude. |
 | `github_token`, `azure_token` | — | Global token for source code mapping (can also be set per repository). |
 | `source_context_lines` | — | How many neighboring lines to show around a line in the source snippet. |
+| `environment` | — | `production` (default) / `development`. The "Test log" button on the Errors page only shows in `development`. |
+| `public_host` | For MCP ✅ | The domain allowed in the MCP server's (`/mcp`) DNS-rebinding protection, e.g. `loglens.example.com`. If empty, MCP only works from `localhost` — behind a real domain (Coolify/Cloudflare) an MCP client (Claude Code etc.) trying to connect will get "Invalid Host header". |
+| `public_url_scheme` | — | `auto` (default, checks `X-Forwarded-Proto`) / `http` / `https`. Scheme used for webhook URLs — force it here if `auto` guesses wrong behind a reverse proxy. Can also be changed from the Settings panel. |
 
 > **Note:** if `local_base_url`/`ollama_base_url` need to reach the host FROM INSIDE the
 > container, use `host.docker.internal`. If the LLM isn't on the same server, use its actual

@@ -26,6 +26,11 @@ Type a name into the "New key" field (e.g. "Claude Code - my MacBook") and click
 > The key is shown **only once** — copy it. If you lose it, create a new key and revoke the old
 > one. Keys are valid indefinitely and can be revoked at any time.
 
+> **If your server is behind a domain (Coolify/Cloudflare etc.):** you must set the
+> `PUBLIC_HOST` environment variable to your deploy domain (e.g. `public_host=loglens.example.com`),
+> otherwise MCP clients get an "Invalid Host header" error — see
+> [10. Environment Variables](10-env-degiskenleri-en.md#variable-descriptions).
+
 ## 2. Connect your AI tool
 
 **Claude Code:**
