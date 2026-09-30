@@ -144,6 +144,7 @@ export default function Users() {
           <select value={form.role} onChange={set("role")}>
             {ROLES.map((r) => <option key={r} value={r}>{roleLabel(r)}</option>)}
           </select>
+          <p className="text-faint text-[11px] mt-1">{t("users.poReadOnlyHint")}</p>
           {ok && <div className="mt-3 bg-ok-soft text-ok rounded-[9px] px-3 py-2 text-[13px] font-semibold">{ok}</div>}
           <button className="btn btn-block mt-4" type="submit" disabled={busy}>{busy ? t("users.creating") : t("users.createButton")}</button>
         </form>

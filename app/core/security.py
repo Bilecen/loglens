@@ -100,3 +100,11 @@ async def require_admin(user: dict = Depends(get_current_user)) -> dict:
     if user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Bu işlem için admin yetkisi gerekli")
     return user
+
+
+async def require_writer(user: dict = Depends(get_current_user)) -> dict:
+    """PO/PM rolü salt-okunurdur — hata verisini (durum/atama/not/yorum) inceleyebilir
+    ama değiştiremez. Okuma uç noktaları hâlâ get_current_user kullanır."""
+    if user.get("role") == "po":
+        raise HTTPException(status_code=403, detail="PO/PM rolü salt-okunurdur, değişiklik yapamaz")
+    return user

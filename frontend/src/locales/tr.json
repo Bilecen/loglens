@@ -373,6 +373,7 @@
     "passwordLabel": "Geçici parola",
     "passwordPlaceholder": "En az 6 karakter",
     "roleLabel": "Rol",
+    "poReadOnlyHint": "PO/PM salt-okunurdur: hatalara bakabilir ama durum/atama/not değiştiremez.",
     "creating": "Oluşturuluyor…",
     "createButton": "Kullanıcı oluştur"
   },
