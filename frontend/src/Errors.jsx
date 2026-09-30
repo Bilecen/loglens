@@ -15,7 +15,7 @@ const TERMINAL = new Set(["resolved", "ignored"]);
 
 export default function Errors({ initialFilter }) {
   const { t } = useLocale();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isReadOnly } = useAuth();
   const { projectId } = useProject();
   const [clusters, setClusters] = useState([]);
   const [total, setTotal] = useState(0);
@@ -89,7 +89,7 @@ export default function Errors({ initialFilter }) {
           <button className="btn ghost" onClick={load} disabled={loading} title={t("errors.refresh")}>
             <Icon icon="lucide:refresh-cw" size={14} className={loading ? "animate-spin" : ""} /> {t("errors.refresh")}
           </button>
-          {showTestLog && <button className="btn" onClick={() => setShowIngest(true)}>{t("errors.testLog")}</button>}
+          {showTestLog && !isReadOnly && <button className="btn" onClick={() => setShowIngest(true)}>{t("errors.testLog")}</button>}
         </div>
       </div>
 
@@ -163,7 +163,7 @@ export default function Errors({ initialFilter }) {
           {!selected ? (
             <div className="text-muted py-12 text-center card-surface border-dashed">{t("errors.selectClusterForDetail")}</div>
           ) : (
-            <Detail data={selected} users={users} me={user} isAdmin={isAdmin} providers={providers} llmConfigured={llmConfigured}
+            <Detail data={selected} users={users} me={user} isAdmin={isAdmin} isReadOnly={isReadOnly} providers={providers} llmConfigured={llmConfigured}
               onClose={() => setSelected(null)} onUpdated={onUpdated} />
           )}
         </aside>
@@ -176,7 +176,7 @@ export default function Errors({ initialFilter }) {
 
 const lbl = "text-faint text-[11px] uppercase tracking-wide font-bold mt-[18px] mb-[7px]";
 
-function Detail({ data, users, me, isAdmin, providers = [], llmConfigured = false, onClose, onUpdated }) {
+function Detail({ data, users, me, isAdmin, isReadOnly = false, providers = [], llmConfigured = false, onClose, onUpdated }) {
   const { cluster: c, occurrences } = data;
   const confirm = useConfirm();
   const { t } = useLocale();
@@ -299,7 +299,7 @@ function Detail({ data, users, me, isAdmin, providers = [], llmConfigured = fals
       <div className="grid grid-cols-2 gap-3">
         <div>
           <div className={lbl}>{t("errors.status")}</div>
-          <select className="w-full" value={c.status} disabled={saving || statusLocked}
+          <select className="w-full" value={c.status} disabled={saving || statusLocked || isReadOnly}
             onChange={(e) => onStatusChange(e.target.value)}>
             {STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
           </select>
@@ -307,7 +307,7 @@ function Detail({ data, users, me, isAdmin, providers = [], llmConfigured = fals
         </div>
         <div>
           <div className={lbl}>{t("errors.assignee")}</div>
-          <select className="w-full" value={c.assignee_id ?? ""} disabled={saving}
+          <select className="w-full" value={c.assignee_id ?? ""} disabled={saving || isReadOnly}
             onChange={(e) => patch({ assignee_id: e.target.value ? Number(e.target.value) : null })}>
             <option value="">{t("errors.unassigned")}</option>
             {assignOptions.filter(Boolean).map((u) => (
@@ -324,7 +324,7 @@ function Detail({ data, users, me, isAdmin, providers = [], llmConfigured = fals
           <div className="flex-1 min-w-[140px] text-[12.5px] text-warn font-medium">
             {llmConfigured ? t("errors.llmUnreachableMessage") : t("errors.llmNotConfiguredMessage")}
           </div>
-          {llmConfigured && (
+          {llmConfigured && !isReadOnly && (
             <button className="btn sm" disabled={reinterpreting} onClick={reinterpret}>
               {reinterpreting ? t("errors.interpreting") : <><Icon icon="lucide:sparkles" size={13} /> {t("errors.reinterpret")}</>}
             </button>
@@ -351,7 +351,7 @@ function Detail({ data, users, me, isAdmin, providers = [], llmConfigured = fals
         <div className="mt-[18px]">
           <div className="flex items-center gap-2 flex-wrap mb-2">
             <span className="text-faint text-[11px] uppercase tracking-wide font-bold">{t("errors.secondOpinion")}</span>
-            {providers.map((p) => (
+            {!isReadOnly && providers.map((p) => (
               <button key={p} className="btn ghost sm" disabled={!!askingProvider} onClick={() => askOpinion(p)}>
                 {askingProvider === p
                   ? t("errors.asking")
@@ -402,9 +402,9 @@ function Detail({ data, users, me, isAdmin, providers = [], llmConfigured = fals
                   </span>
                 )}
                 <span className="text-faint text-[11px] ml-auto">{timeAgo(n.created_at)}</span>
-                {!editing && (mine || isAdmin) && (
+                {!editing && ((mine && !isReadOnly) || isAdmin) && (
                   <div className="flex items-center gap-0.5">
-                    {mine && (
+                    {mine && !isReadOnly && (
                       <button className="text-faint hover:text-fg px-1" title={t("errors.edit")}
                         onClick={() => { setEditId(n.id); setEditDraft(n.body); }}><Icon icon="lucide:pencil" size={13} /></button>
                     )}
@@ -431,16 +431,18 @@ function Detail({ data, users, me, isAdmin, providers = [], llmConfigured = fals
           );
         })}
       </div>
-      <div className="mt-2.5 flex flex-col gap-2">
-        <textarea rows={2} value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={t("errors.addNotePlaceholder")}
-          onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) addNote(); }} />
-        <div className="flex items-center justify-between">
-          <span className="text-faint text-[11px]">{t("errors.sendHint")}</span>
-          <button className="btn sm" disabled={posting || !draft.trim()} onClick={addNote}>
-            {posting ? t("errors.adding") : t("errors.addNote")}
-          </button>
+      {!isReadOnly && (
+        <div className="mt-2.5 flex flex-col gap-2">
+          <textarea rows={2} value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={t("errors.addNotePlaceholder")}
+            onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) addNote(); }} />
+          <div className="flex items-center justify-between">
+            <span className="text-faint text-[11px]">{t("errors.sendHint")}</span>
+            <button className="btn sm" disabled={posting || !draft.trim()} onClick={addNote}>
+              {posting ? t("errors.adding") : t("errors.addNote")}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3 mt-4">
         <div><div className={lbl}>{t("errors.firstVersion")}</div><div>{c.first_seen_version || "-"}</div></div>

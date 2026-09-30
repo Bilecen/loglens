@@ -70,7 +70,7 @@ async def llm_providers(user: dict = Depends(auth.get_current_user)):
 
 @router.patch("/clusters/{cluster_id}")
 async def cluster_update(cluster_id: int, body: ClusterUpdateIn,
-                         user: dict = Depends(auth.get_current_user)):
+                         user: dict = Depends(auth.require_writer)):
     fields = body.model_dump(exclude_unset=True)
     if "status" in fields:
         await _guard_status_reversal(cluster_id, fields["status"], user)
@@ -103,14 +103,14 @@ async def _guard_status_reversal(cluster_id: int, new_status: str, user: dict) -
 
 @router.post("/clusters/{cluster_id}/notes")
 async def cluster_add_note(cluster_id: int, body: NoteIn,
-                           user: dict = Depends(auth.get_current_user)):
+                           user: dict = Depends(auth.require_writer)):
     if not await db.get_cluster(cluster_id):
         raise HTTPException(status_code=404, detail="cluster bulunamadı")
     return await db.add_note(cluster_id, author_id=user["id"], body=body.body.strip())
 
 
 @router.post("/clusters/{cluster_id}/interpret")
-async def cluster_reinterpret(cluster_id: int, user: dict = Depends(auth.get_current_user)):
+async def cluster_reinterpret(cluster_id: int, user: dict = Depends(auth.require_writer)):
     """LLM erişilemediği için yorumlanmamış grubu elle yeniden yorumlat."""
     data = await db.get_cluster_reinterpret_input(cluster_id)
     if data is None:
@@ -126,7 +126,7 @@ async def cluster_reinterpret(cluster_id: int, user: dict = Depends(auth.get_cur
 
 @router.post("/clusters/{cluster_id}/opinion")
 async def cluster_opinion(cluster_id: int, body: OpinionIn,
-                          user: dict = Depends(auth.get_current_user)):
+                          user: dict = Depends(auth.require_writer)):
     """Belirli bir sağlayıcıdan (GPT/Gemini/Claude…) bu hataya özel ikinci görüş al."""
     data = await db.get_cluster_reinterpret_input(cluster_id)
     if data is None:
@@ -149,7 +149,7 @@ async def _note_or_404(cluster_id: int, note_id: int) -> dict:
 
 @router.patch("/clusters/{cluster_id}/notes/{note_id}")
 async def cluster_edit_note(cluster_id: int, note_id: int, body: NoteIn,
-                            user: dict = Depends(auth.get_current_user)):
+                            user: dict = Depends(auth.require_writer)):
     note = await _note_or_404(cluster_id, note_id)
     if note["author_id"] != user["id"]:
         raise HTTPException(status_code=403, detail="Yalnızca kendi notunu düzenleyebilirsin")

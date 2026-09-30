@@ -373,6 +373,7 @@
     "passwordLabel": "Temporary password",
     "passwordPlaceholder": "At least 6 characters",
     "roleLabel": "Role",
+    "poReadOnlyHint": "PO/PM is read-only: can view errors but can't change status/assignee/notes.",
     "creating": "Creating…",
     "createButton": "Create user"
   },

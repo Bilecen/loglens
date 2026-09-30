@@ -44,7 +44,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthCtx.Provider value={{ user, loading, login, register, logout, updateUser: setUser, isAdmin: user?.role === "admin" }}>
+    <AuthCtx.Provider value={{ user, loading, login, register, logout, updateUser: setUser, isAdmin: user?.role === "admin", isReadOnly: user?.role === "po" }}>
       {children}
     </AuthCtx.Provider>
   );

@@ -48,6 +48,13 @@ def _uid() -> int:
     return uid
 
 
+async def _require_writer() -> None:
+    """PO/PM rolü salt-okunurdur — MCP üzerinden de hata verisini değiştiremez."""
+    user = await db_users.get_user_by_id(_uid())
+    if user and user.get("role") == "po":
+        raise ValueError("PO/PM rolündeki MCP anahtarları salt-okunurdur, bu işlem yapılamaz.")
+
+
 class _BearerAuthMiddleware:
     """`/mcp` altındaki her isteği LogLens `mcp_tokens` tablosuna göre doğrular."""
 
@@ -156,6 +163,7 @@ async def get_stats(project_id: int) -> dict:
 async def add_note(cluster_id: int, body: str) -> dict:
     """Bir hata kümesine not bırakır — örn. yaptığın düzeltmenin özeti ya da bulguların.
     Not takımın gördüğü panelde görünür."""
+    await _require_writer()
     if not await db_clusters.get_cluster(cluster_id):
         raise ValueError(f"cluster {cluster_id} bulunamadı")
     return await db_clusters.add_note(cluster_id, author_id=_uid(), body=body.strip(), origin="mcp")
@@ -166,6 +174,7 @@ async def update_status(cluster_id: int, status: str) -> dict:
     """Hata kümesinin durumunu değiştirir: open|investigating|resolved|ignored. Düzeltmeyi
     tamamladıysan 'resolved' yap. NOT: zaten resolved/ignored olan bir kaydı geri açmak
     (reversal) yalnızca admin rolündeki kullanıcının MCP anahtarıyla mümkündür."""
+    await _require_writer()
     if status not in {"open", "investigating", "resolved", "ignored"}:
         raise ValueError("status: open|investigating|resolved|ignored olmalı")
     current = await db_clusters.get_cluster(cluster_id)
