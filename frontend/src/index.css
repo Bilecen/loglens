@@ -3,7 +3,7 @@
 
 /* Icon.jsx ikon class'ını dinamik kurar; scanner statik göremez. Kullanılan
    ikonları safelist'le ki plugin build-time üretsin (offline, tree-shake'li). */
-@source inline("icon-[lucide--{layout-dashboard,triangle-alert,folders,users,webhook,settings,scan-eye,sun,moon,user,x,lock,external-link,pencil,trash,check,circle-check,circle-x,arrow-right,plug,copy,server,bell,menu,messages-square,send,check-check,image,pencil,book-open,sparkles,triangle-alert,database,play,flame,smartphone,key,languages}]");
+@source inline("icon-[lucide--{layout-dashboard,triangle-alert,folders,folder,users,webhook,settings,scan-eye,sun,moon,user,x,lock,external-link,pencil,trash,check,circle-check,circle-x,arrow-right,plug,plug-zap,copy,server,bell,menu,messages-square,send,check-check,image,pencil,book-open,sparkles,triangle-alert,database,play,flame,smartphone,key,languages,refresh-cw}]");
 @source inline("icon-[simple-icons--{github,azuredevops}]");
 
 /* data-theme="dark" olduğunda dark: varyantı devreye girer */

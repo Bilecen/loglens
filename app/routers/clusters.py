@@ -158,9 +158,9 @@ async def cluster_edit_note(cluster_id: int, note_id: int, body: NoteIn,
 
 @router.delete("/clusters/{cluster_id}/notes/{note_id}")
 async def cluster_delete_note(cluster_id: int, note_id: int,
-                              user: dict = Depends(auth.get_current_user)):
-    note = await _note_or_404(cluster_id, note_id)
-    if note["author_id"] != user["id"] and user.get("role") != "admin":
-        raise HTTPException(status_code=403, detail="Bu notu silme yetkin yok")
+                              user: dict = Depends(auth.require_admin)):
+    """Not silme yalnızca admin'e açık — yazarın kendi notunu silmesi dahil (MCP'den eklenen
+    notlar da bir kullanıcı hesabı üzerinden geldiği için ayrım yapılmaz, herkes admin kuralına tabi)."""
+    await _note_or_404(cluster_id, note_id)
     await db.delete_note(note_id)
     return {"deleted": note_id}

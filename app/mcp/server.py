@@ -158,7 +158,7 @@ async def add_note(cluster_id: int, body: str) -> dict:
     Not takımın gördüğü panelde görünür."""
     if not await db_clusters.get_cluster(cluster_id):
         raise ValueError(f"cluster {cluster_id} bulunamadı")
-    return await db_clusters.add_note(cluster_id, author_id=_uid(), body=body.strip())
+    return await db_clusters.add_note(cluster_id, author_id=_uid(), body=body.strip(), origin="mcp")
 
 
 @mcp.tool()
